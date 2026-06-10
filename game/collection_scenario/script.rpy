@@ -162,8 +162,7 @@ init python:
 # Room hotspot screen
 # ---------------------------------------------------------------------------
 screen investigation_buttons():
-
-    if not evidence_found["cocaine_packaged"]:
+    if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
         imagebutton:
             xpos 0.15  ypos 0.70
             idle  ("cocaine_idle" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
@@ -176,10 +175,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["cocaine_processed"] and "cocaine" not in collected_evidence_inventory:
+    elif evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
         imagebutton:
             xpos 0.15 ypos 0.70
-            idle "casefile_evidence_idle"
+            idle  "casefile_evidence_idle"
             hover "casefile_evidence_hover"
             action [
                 Function(evidence.add_to_inventory, evids.get("Cocaine Sample")),
@@ -188,8 +187,8 @@ screen investigation_buttons():
                 Show("inventory"),
                 Notify("Evidence added to inventory"),
             ]
-
-    if not evidence_found["mdma_packaged"]:
+    
+    if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
         imagebutton:
             xpos 0.50  ypos 0.65
             idle  ("mdma_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
@@ -202,10 +201,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["mdma_processed"] and "mdma" not in collected_evidence_inventory:
+    elif evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
         imagebutton:
             xpos 0.50 ypos 0.65
-            idle "casefile_evidence_idle"
+            idle  "casefile_evidence_idle"
             hover "casefile_evidence_hover"
             action [
                 Function(evidence.add_to_inventory, evids.get("MDMA Sample")),
@@ -215,7 +214,7 @@ screen investigation_buttons():
                 Notify("Evidence added to inventory"),
             ]
 
-    if not evidence_found["meth_packaged"]:
+    if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
         imagebutton:
             xpos 0.30  ypos 0.80
             idle  ("meth_idle" if not evidence_found["meth_presumptive"] else "meth_brown")
@@ -228,10 +227,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
-    elif evidence_found["meth_processed"] and "meth" not in collected_evidence_inventory:
+    elif evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
         imagebutton:
             xpos 0.30 ypos 0.80
-            idle "casefile_evidence_idle"
+            idle  "casefile_evidence_idle"
             hover "casefile_evidence_hover"
             action [
                 Function(evidence.add_to_inventory, evids.get("Meth Sample")),
@@ -245,10 +244,11 @@ screen investigation_buttons():
             and evidence_found["mdma_packaged"]
             and evidence_found["meth_packaged"]):
         textbutton "Finish Investigation":
-            xpos 0.9  ypos 0.9
+            xpos 0.75  ypos 0.9
             style "hud_button"
+            background "#006"
+            hover_background "#00a"
             action Jump("investigation_complete")
-
 
 screen colour_chart(chart_image):
     modal False
@@ -321,7 +321,7 @@ label inspect_evidence:
         hide screen colour_chart
         hide screen reagent_result
         hide screen Inventory
-        $ evidence_found[testing_item + "_packaged"] = True
+        $ evidence_found[testing_item + "_processed"] = True
         $ testing_item = None
         $ selected_tool = None
         show screen investigation_buttons
@@ -377,8 +377,7 @@ label investigation_complete:
     show nina normal1
     n "Great job! Looks like you've collected all of the evidence at the scene."
     show nina talk
-    n ""
+    n "We will send this over to the lab for further analysis, in order to fully determine whether your presumptive field tests were correct."
     show nina thinknote1
-    n "Once the player has finished collecting all their evidence, we should move on to the lab level for analysis."
-    n "This won't be covered until later on though. For now, give yourselves a pat on the back!"
+    n "For now, give yourself a pat on the back!"
     return

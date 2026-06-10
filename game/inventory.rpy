@@ -351,7 +351,10 @@ screen inventory_slot(item=None):
         add "inventory-slot"
 
         if image_name != "":
-            add Transform(image_name, zoom=0.45, xoffset=20, yoffset=20)
+            fixed:
+                add Transform(image_name, zoom=0.45, xoffset=20, yoffset=20)
+                xsize 90
+                ysize 90
         
             if show_overlay:
                 add Transform("inventory-item-overlay", yzoom=0.67, xzoom=0.6)
@@ -377,7 +380,10 @@ screen inventory_info(name="", image_name="", description=""):
     modal True
     add Solid("#0008")
     add Transform("inventory-icon-bg", zoom=0.7, xalign=0.5, yalign=0.5)
-    add Transform(image_name, xalign=0.5, yalign=0.45)
+    fixed:
+        add Transform(image_name, xalign=0.5, yalign=0.45)
+        xsize 90
+        ysize 90
     text f"{name}" at Transform(xalign=0.5, yalign=0.57)
     text f"{description}":
         size 24
