@@ -11,11 +11,18 @@ init python:
     }
 
     evids = load_items("jsons/evidence.json")
+    evids_by_key = {
+        "cocaine": evids.get("Cocaine Sample"),
+        "mdma": evids.get("MDMA Sample"),
+        "meth": evids.get("Meth Sample"),
+        "fingerprint": evids.get("Fingerprint"),
+    }
+
     tools = load_items("jsons/toolbox.json")
     for tool in tools.values():
         toolbox.add_to_inventory(tool)
 
-    evidence_found = {
+default evidence_found = {
         "firearm":             False,
         "firearm_fingerprint": False,
         "mdma_presumptive":    False,
@@ -29,17 +36,17 @@ init python:
         "cocaine_processed":   False,   # all the drag and drop steps are done, awaiting collect click
     }
 
-    # valid step definitions 
-    # quiz is a marker that triggers the ID question in between steps
-    # collect_step is a marker that shows the bagged evidence
-    valid_evidence_steps = {
+# valid step definitions 
+# quiz is a marker that triggers the ID question in between steps
+# collect_step is a marker that shows the bagged evidence
+default valid_evidence_steps = {
         "cocaine": [
             {"cocaine_idle":            "tube_idle"},
             {"cocaine_tube":            "cobalt_thiocynate_idle"},
             {"cocaine_blue":            "hydrochloric_acid_idle"},
             {"cocaine_pink":            "chloroform_idle"}, 
-            {"cocaine_blue_pink":       "evidence_bag_idle"},
             "quiz",
+            {"cocaine_blue_pink":       "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
@@ -59,34 +66,24 @@ init python:
         ],
     }
 
-    # positions on main screen per item
-    evidence_positions = {
+# positions on main screen per item
+default evidence_positions = {
         "cocaine": (0.15, 0.70),
         "mdma":    (0.50, 0.65),
         "meth":    (0.30, 0.80),
     }
 
-    # step index for each item (counts drag steps only)
-    evidence_step_index = {
+# step index for each item (counts drag steps only)
+default evidence_step_index = {
         "cocaine": 0,
         "mdma":    0,
         "meth":    0,
     }
 
-    evids = load_items("jsons/evidence.json")
-
-    evids_by_key = {
-        "cocaine": evids.get("Cocaine Sample"),
-        "mdma": evids.get("MDMA Sample"),
-        "meth": evids.get("Meth Sample"),
-        "fingerprint": evids.get("Fingerprint"),
-    }
-
-    testing_item        = None
-    selected_tool       = None
-    quiz_pending        = False
-    collect_step_flag   = False
-
+default testing_item        = None
+default selected_tool       = None
+default quiz_pending        = False
+default collect_step_flag   = False
 
 default cocaine_id_confirmed = False
 default mdma_id_confirmed    = False
@@ -116,25 +113,26 @@ init python:
                     return list(s.keys())[0]
                 drag_index += 1
         return None
-
+    
     def _quiz_is_next():
-        """True if the next thing after the last completed step is a quiz marker."""
+        """Checks if a quiz marker directly follows our current drag index position."""
         if testing_item is None:
             return False
         steps = valid_evidence_steps.get(testing_item, [])
         idx = evidence_step_index.get(testing_item, 0)
-        drag_count = 0
+        
+        drag_index = 0
         for i, s in enumerate(steps):
-            if s == "quiz":
-                continue
-            drag_count += 1
-            if drag_count == idx:
-                if i + 1 < len(steps) and steps[i + 1] == "quiz":
-                    return True
-                return False
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    if i + 1 < len(steps) and steps[i + 1] == "quiz":
+                        return True
+                    return False
+                drag_index += 1
         return False
 
     def _collect_step_is_next():
+        """Checks if a collect_step is the next drag index position."""
         if testing_item is None:
             return False
         steps = valid_evidence_steps.get(testing_item, [])

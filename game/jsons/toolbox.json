@@ -7,25 +7,25 @@
     },
     {
         "name": "Cobalt Thiocynate",
-        "image_name": "cobalt_thiocynate_idle", 
+        "image_name": "toolbox-cobalt_thiocynate", 
         "usable": true, 
         "action": "use_cobalt_thiocynate"
     },
     {
         "name": "Hydrochloric Acid",
-        "image_name": "hydrochloric_acid_idle", 
+        "image_name": "toolbox-hydrochloric_acid", 
         "usable": true, 
         "action": "use_hydrochloric_acid"
     },
     {
         "name": "Chloroform",
-        "image_name": "chloroform_idle", 
+        "image_name": "toolbox-chloroform", 
         "usable": true, 
         "action": "use_chloroform"
     },
     {
         "name": "Tube",
-        "image_name": "tube_idle", 
+        "image_name": "toolbox-tube", 
         "usable": true, 
         "action": "use_tube"
     },

@@ -43,7 +43,6 @@ init -5 python:
             return None
         steps = valid_evidence_steps.get(testing_item, [])
         idx = store.evidence_step_index.get(testing_item, 0)
-        # Skip past quiz markers when counting real drag steps
         drag_step = 0
         for s in steps:
             if s == "quiz":
@@ -58,7 +57,6 @@ init -5 python:
         steps = valid_evidence_steps.get(testing_item, [])
         idx = store.evidence_step_index.get(testing_item, 0)
         store.evidence_step_index[testing_item] = idx + 1
-
     def generic_drop(drags, drop):
         """
         Single drop callback used by the generic drag screen.
@@ -70,7 +68,7 @@ init -5 python:
             renpy.restart_interaction()
             return False
 
-        dragged_image = drags[0].drag_name   # we set drag_name = tool image name
+        dragged_image = drags[0].drag_name
         step = _get_current_step()
 
         if step is None:
@@ -78,7 +76,6 @@ init -5 python:
             renpy.restart_interaction()
             return False
 
-        # step is e.g. {"cocaine_idle": "scott_reagent_idle"}
         correct_tool_image = list(step.values())[0]
 
         if dragged_image != correct_tool_image:
@@ -86,44 +83,39 @@ init -5 python:
             store.selected_tool = None
             renpy.restart_interaction()
             return False
-
-        # Correct — advance step and set flags
         _advance_step()
-        new_idx = store.evidence_step_index.get(testing_item, 0)
-        steps = valid_evidence_steps.get(testing_item, [])
-
-        # Count total drag steps (excluding quiz markers)
-        total_drag_steps = sum(1 for s in steps if s != "quiz")
-        # Check if next entry is a quiz
-        flat_idx = 0
-        real_idx = 0
-        quiz_next = False
-        for s in steps:
-            if s == "quiz":
-                if real_idx == new_idx:
-                    quiz_next = True
-                    break
+        
+        current_idx = store.evidence_step_index.get(store.testing_item, 0)
+        steps = store.valid_evidence_steps.get(store.testing_item, [])
+        drag_counter = 0
+        next_marker = None
+        
+        for item in steps:
+            if isinstance(item, dict):
+                drag_counter += 1
             else:
-                real_idx += 1
+                if drag_counter == current_idx:
+                    next_marker = item
+                    break
 
-        # Set presumptive flag after step 0 (reagent)
-        if new_idx == 1:
-            evidence_found[testing_item + "_presumptive"] = True
+        if next_marker == "quiz":
+            store.evidence_found[store.testing_item + "_presumptive"] = True
             store.quiz_pending = True
+        elif next_marker == "collect_step":
+            store.evidence_found[store.testing_item + "_packaged"] = True
 
-        # Set packaged flag when all drag steps done
-        if new_idx >= total_drag_steps:
-            evidence_found[testing_item + "_packaged"] = True
+        total_drag_steps = sum(1 for s in steps if isinstance(s, dict))
+        if current_idx >= total_drag_steps:
+            store.evidence_found[store.testing_item + "_packaged"] = True
 
         store.selected_tool = None
         renpy.restart_interaction()
         return True
 
     # ------------------------------------------------------------------
-    # use_* functions — called when player clicks the hand icon.
+    # use_* functions called when player clicks the hand icon.
     # Sets selected_tool to this tool's image name.
     # The drag screen will show it as a draggable.
-    # Any tool can be selected — generic_drop validates correctness.
     # ------------------------------------------------------------------
 
     def _use_tool(tool_name):
