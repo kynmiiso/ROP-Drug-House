@@ -380,10 +380,7 @@ screen inventory_info(name="", image_name="", description=""):
     modal True
     add Solid("#0008")
     add Transform("inventory-icon-bg", zoom=0.7, xalign=0.5, yalign=0.5)
-    fixed:
-        add Transform(image_name, xalign=0.5, yalign=0.45)
-        xsize 90
-        ysize 90
+    add Transform(image_name, xalign=0.5, yalign=0.45)
     text f"{name}" at Transform(xalign=0.5, yalign=0.57)
     text f"{description}":
         size 24

@@ -1,5 +1,8 @@
 ﻿image house exterior = "images/Scenes/forensics_house_exterior_placeholder.jpg"
 image house interior = "images/Scenes/forensics_house_interior_placeholder.jpg"
+image house interior zoom1 = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
+image house interior zoom2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.png"
+image house interior zoom3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.png"
 
 init python:
     import json
@@ -46,21 +49,23 @@ default valid_evidence_steps = {
             {"cocaine_blue":            "hydrochloric_acid_idle"},
             {"cocaine_pink":            "chloroform_idle"}, 
             "quiz",
-            {"cocaine_blue_pink":       "evidence_bag_idle"},
+            {"cocaine_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "mdma": [
-            {"mdma_idle":               "marquis_reagent_idle"},
+            {"mdma_idle":               "tube_idle"},
+            {"mdma_tube":               "marquis_reagent_idle"},
             "quiz",
-            {"mdma_purple":             "evidence_bag_idle"},
+            {"mdma_idle":               "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "meth": [
-            {"meth_idle":               "marquis_reagent_idle"},
+            {"meth_idle":               "tube_idle"},
+            {"meth_tube":               "marquis_reagent_idle"},
             "quiz",
-            {"meth_brown":              "evidence_bag_idle"},
+            {"meth_idle":               "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
@@ -157,7 +162,7 @@ init python:
         "cocaine": {
             "chart":   "scott_chart",
             "correct": "Cocaine",
-            "correct_msg": "Correct! The blue colour with the Scott test indicates cocaine.",
+            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
             "wrong": {
                 "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
                 "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
@@ -250,7 +255,7 @@ screen investigation_buttons():
 # ---------------------------------------------------------------------------
 screen colour_chart(chart_image):
     modal False
-    add chart_image at Transform(zoom=1.2, xalign=0.5, yalign=0.2)
+    add chart_image at Transform(zoom=1.2, xalign=0.3, yalign=0.2)
 
 # ---------------------------------------------------------------------------
 # Reagent color change result screen
@@ -259,7 +264,7 @@ screen reagent_result(item):
     modal False
 
     if item == "cocaine":
-        add "cocaine_blue" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif item == "mdma":
         add "mdma_purple" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif item == "meth":
@@ -268,7 +273,14 @@ screen reagent_result(item):
 label inspect_evidence:
     hide screen investigation_buttons
     show screen inventory
-
+    
+    if "mdma" in testing_item:
+        scene house interior zoom1
+    elif "meth" in testing_item:
+        scene house interior zoom2
+    elif "cocaine" in testing_item:
+        scene house interior zoom3
+    
     label evidence_wait_step:
         if evidence_found[testing_item + "_processed"]:
             jump evidence_done
@@ -333,7 +345,8 @@ label inspect_evidence:
         hide screen colour_chart
         hide screen reagent_result
         hide screen Inventory
-        
+        scene house interior
+
         $ testing_item = None
         $ selected_tool = None
         $ collect_step_flag = False
@@ -388,6 +401,7 @@ label scene_room:
     jump scene_room_loop
 
 label investigation_complete:
+    scene house interior
     hide screen investigation_buttons
     hide screen inventory
     show nina normal1
