@@ -14,7 +14,6 @@ init python:
     tools = load_items("jsons/toolbox.json")
     for tool in tools.values():
         toolbox.add_to_inventory(tool)
-        
 
     evidence_found = {
         "firearm":             False,
@@ -30,37 +29,41 @@ init python:
         "cocaine_processed":   False,   # all the drag and drop steps are done, awaiting collect click
     }
 
-    # Step definitions 
-    # "quiz" is a marker that triggers the identification question in between steps
+    # valid step definitions 
+    # quiz is a marker that triggers the ID question in between steps
+    # collect_step is a marker that shows the bagged evidence
     valid_evidence_steps = {
         "cocaine": [
             {"cocaine_idle":    "scott_reagent_idle"},
             "quiz",
             {"cocaine_blue":    "evidence_bag_idle"},
             {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            "collect_step"
         ],
         "mdma": [
             {"mdma_idle":       "marquis_reagent_idle"},
             "quiz",
             {"mdma_purple":     "evidence_bag_idle"},
             {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            "collect_step"
         ],
         "meth": [
             {"meth_idle":       "marquis_reagent_idle"},
             "quiz",
             {"meth_brown":      "evidence_bag_idle"},
             {"evidence_bag_idle":    "tamper_evident_tape_idle"},
+            "collect_step"
         ],
     }
 
-    # Hotspot positions per item
+    # positions on main screen per item
     evidence_positions = {
         "cocaine": (0.15, 0.70),
         "mdma":    (0.50, 0.65),
         "meth":    (0.30, 0.80),
     }
 
-    # Per-item step index (counts drag steps only, not quiz markers)
+    # step index for each item (counts drag steps only)
     evidence_step_index = {
         "cocaine": 0,
         "mdma":    0,
@@ -76,9 +79,10 @@ init python:
         "fingerprint": evids.get("Fingerprint"),
     }
 
-    testing_item   = None
-    selected_tool  = None
-    quiz_pending   = False
+    testing_item        = None
+    selected_tool       = None
+    quiz_pending        = False
+    collect_step_flag   = False
 
 
 default cocaine_id_confirmed = False
@@ -99,9 +103,12 @@ init python:
             return None
         steps = valid_evidence_steps.get(testing_item, [])
         idx = evidence_step_index.get(testing_item, 0)
-        drag_steps = [s for s in steps if s != "quiz"]
-        if idx < len(drag_steps):
-            return list(drag_steps[idx].keys())[0]
+        drag_index = 0
+        for s in steps:
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    return list(s.keys())[0]
+                drag_index += 1
         return None
 
     def _quiz_is_next():
@@ -110,17 +117,32 @@ init python:
             return False
         steps = valid_evidence_steps.get(testing_item, [])
         idx = evidence_step_index.get(testing_item, 0)
-        # Walk through steps counting drag steps; check what follows step idx-1
         drag_count = 0
         for i, s in enumerate(steps):
             if s == "quiz":
                 continue
             drag_count += 1
             if drag_count == idx:
-                # Check if next entry is quiz
                 if i + 1 < len(steps) and steps[i + 1] == "quiz":
                     return True
                 return False
+        return False
+
+    def _collect_step_is_next():
+        if testing_item is None:
+            return False
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = evidence_step_index.get(testing_item, 0)
+        drag_index = 0
+        for i, s in enumerate(steps):
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    for j in range(i+1, len(steps)):
+                        if steps[j] == "collect_step":
+                            return True
+                        if isinstance(steps[j], dict):
+                            return False
+                drag_index += 1
         return False
 
 # ---------------------------------------------------------------------------
@@ -157,7 +179,6 @@ init python:
         },
     }
 
-
 # ---------------------------------------------------------------------------
 # Room hotspot screen
 # ---------------------------------------------------------------------------
@@ -168,7 +189,7 @@ screen investigation_buttons():
             idle  ("cocaine_idle" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
             hover ("cocaine_hover" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
             mouse "hover"
-            hovered   Notify("Suspected powder")
+            hovered   Notify("Suspected drugs")
             unhovered NullAction()
             action [
                 SetVariable("testing_item",  "cocaine"),
@@ -176,17 +197,7 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
-        imagebutton:
-            xpos 0.15 ypos 0.70
-            idle  "casefile_evidence_idle"
-            hover "casefile_evidence_hover"
-            action [
-                Function(evidence.add_to_inventory, evids.get("Cocaine Sample")),
-                Function(collected_evidence_inventory.append, "cocaine"),
-                SetDict(evidence_found, "cocaine_packaged", True),
-                Show("inventory"),
-                Notify("Evidence added to inventory"),
-            ]
+        add "marker_1" at Transform(zoom=0.5, xpos=0.15, ypos=0.70)
     
     if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
         imagebutton:
@@ -194,7 +205,7 @@ screen investigation_buttons():
             idle  ("mdma_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
             hover ("mdma_hover" if not evidence_found["mdma_presumptive"] else "mdma_purple")
             mouse "hover"
-            hovered   Notify("Suspected pills")
+            hovered   Notify("Suspected drugs")
             unhovered NullAction()
             action [
                 SetVariable("testing_item",  "mdma"),
@@ -202,17 +213,7 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
-        imagebutton:
-            xpos 0.50 ypos 0.65
-            idle  "casefile_evidence_idle"
-            hover "casefile_evidence_hover"
-            action [
-                Function(evidence.add_to_inventory, evids.get("MDMA Sample")),
-                Function(collected_evidence_inventory.append, "mdma"),
-                SetDict(evidence_found, "mdma_packaged", True),
-                Show("inventory"),
-                Notify("Evidence added to inventory"),
-            ]
+        add "marker_3" at Transform(zoom=0.5, xpos=0.50, ypos=0.65)
 
     if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
         imagebutton:
@@ -220,7 +221,7 @@ screen investigation_buttons():
             idle  ("meth_idle" if not evidence_found["meth_presumptive"] else "meth_brown")
             hover ("meth_hover" if not evidence_found["meth_presumptive"] else "meth_brown")
             mouse "hover"
-            hovered   Notify("Suspected crystals")
+            hovered   Notify("Suspected drugs")
             unhovered NullAction()
             action [
                 SetVariable("testing_item",  "meth"),
@@ -228,17 +229,7 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
-        imagebutton:
-            xpos 0.30 ypos 0.80
-            idle  "casefile_evidence_idle"
-            hover "casefile_evidence_hover"
-            action [
-                Function(evidence.add_to_inventory, evids.get("Meth Sample")),
-                Function(collected_evidence_inventory.append, "meth"),
-                SetDict(evidence_found, "meth_packaged", True),
-                Show("inventory"),
-                Notify("Evidence added to inventory"),
-            ]
+        add "marker_2" at Transform(zoom=0.5, xpos=0.30, ypos=0.80)
 
     if (evidence_found["cocaine_packaged"]
             and evidence_found["mdma_packaged"]
@@ -250,23 +241,25 @@ screen investigation_buttons():
             hover_background "#00a"
             action Jump("investigation_complete")
 
+# ---------------------------------------------------------------------------
+# Colour chart screen for quiz
+# ---------------------------------------------------------------------------
 screen colour_chart(chart_image):
     modal False
-    add chart_image xalign 0.5 yalign 0.5
-
+    add chart_image at Transform(zoom=1.2, xalign=0.5, yalign=0.2)
 
 # ---------------------------------------------------------------------------
-# Single generic inspect label — handles all three drugs
+# Reagent color change result screen
 # ---------------------------------------------------------------------------
 screen reagent_result(item):
     modal False
 
     if item == "cocaine":
-        add "cocaine_blue" xalign 0.75 yalign 0.5
+        add "cocaine_blue" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif item == "mdma":
-        add "mdma_purple" xalign 0.75 yalign 0.5
+        add "mdma_purple" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif item == "meth":
-        add "meth_brown" xalign 0.75 yalign 0.5
+        add "meth_brown" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
 
 label inspect_evidence:
     hide screen investigation_buttons
@@ -281,6 +274,9 @@ label inspect_evidence:
         if quiz_pending:
             jump evidence_quiz
 
+        if evidence_step_index[testing_item] >= 3:
+            jump collect_step
+            
         # Show the drag screen for the current step
         $ drop_img = _current_drop_image()
         $ xp, yp  = evidence_positions[testing_item]
@@ -288,18 +284,28 @@ label inspect_evidence:
         $ renpy.pause(0.3)
         jump evidence_wait_step
 
+    label collect_step:
+        hide screen drug_processing_screen
+        show screen drug_collection_screen
+        "Click to collect and package the evidence."
+        $ evidence_found[testing_item + "_processed"] = True
+        $ renpy.restart_interaction()
+        jump evidence_done
+
     label evidence_quiz:
         hide screen drug_processing_screen
         $ _q = _QUIZ[testing_item]
         show screen colour_chart(_q["chart"])
         show screen reagent_result(testing_item)
         "What drug is this based on the colour reaction?"
+
         menu:
             "[_q['correct']]":
                 $ store.quiz_pending = False
                 hide screen colour_chart
                 hide screen reagent_result
                 "[_q['correct_msg']]"
+                
             "[list(_q['wrong'].keys())[0]]":
                 hide screen colour_chart
                 hide screen reagent_result
@@ -307,6 +313,7 @@ label inspect_evidence:
                 show screen inventory
                 show screen colour_chart(_q["chart"])
                 jump evidence_quiz
+                
             "[list(_q['wrong'].keys())[1]]":
                 hide screen colour_chart
                 hide screen reagent_result
@@ -314,16 +321,24 @@ label inspect_evidence:
                 show screen inventory
                 show screen colour_chart(_q["chart"])
                 jump evidence_quiz
+
         jump evidence_wait_step
 
     label evidence_done:
+        hide screen drug_collection_screen
         hide screen drug_processing_screen
         hide screen colour_chart
         hide screen reagent_result
         hide screen Inventory
-        $ evidence_found[testing_item + "_processed"] = True
+        
+        $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ testing_item = None
         $ selected_tool = None
+        $ collect_step_flag = False
+        $ quiz_pending = False
+
+        $ renpy.restart_interaction()
+
         show screen investigation_buttons
         jump scene_room_loop
 
@@ -332,9 +347,8 @@ label inspect_evidence:
 # ---------------------------------------------------------------------------
 label scene_room_loop:
     show screen investigation_buttons
-    pause 0.3
+    pause 0.5
     jump scene_room_loop
-
 
 # ---------------------------------------------------------------------------
 # Main script

@@ -103,165 +103,10 @@ screen drag_and_drop(drag_name, drag_image, drop_name, drop_image):
             ypos 250
 
             add drop_image
-            
-# template ver
-# screen drug_processing_screen(drug_image, reagent_image, reagent_correct, bag_image="evidence_bag_idle"):
-#     add drug_image: 
-#         xpos 250 
-#         ypos 250
-#     if not drug_drag_complete:
-#         draggroup:
-#             drag:
-#                 drag_name reagent_correct
-#                 child reagent_image
-#                 xpos 900
-#                 ypos 500
-#             drag:
-#                 drag_name "drug_target"
-#                 xpos 250
-#                 ypos 250
-#                 child Null()
-#                 droppable True
-#                 dragged reagent_drop
 
-screen cocaine_reagent_screen():
-    draggroup:
-        drag:
-            drag_name "scott"
-            child "scott_reagent_idle"
-            xpos 850
-            ypos 500
-        drag:
-            drag_name "target"
-            child "cocaine_idle"
-            xpos 250
-            ypos 250
-            droppable True
-            dragged cocaine_reagent_drop
-
-screen cocaine_bag_screen():
-    draggroup:
-        drag:
-            drag_name "cocaine"
-            child "cocaine_blue"
-            xpos 250
-            ypos 250
-        drag:
-            drag_name "bag_target"
-            child "evidence_bag_idle"
-            xpos 850
-            ypos 250
-            droppable True
-            dragged cocaine_bag_drop
-
-screen cocaine_seal_screen():
-    add "evidence_bag"
-    draggroup:
-        drag:
-            drag_name "tamper_tape"
-            child "tamper_evident_tape_idle"
-            xpos 900
-            ypos 500
-        drag:
-            drag_name "seal_target"
-            child Null()
-            xpos 550
-            ypos 250
-            droppable True
-            dragged cocaine_seal_drop
-
-screen mdma_reagent_screen():
-    draggroup:
-        drag:
-            drag_name "marquis"
-            child "marquis_reagent_idle"
-            xpos 850
-            ypos 500
-        drag:
-            drag_name "target"
-            child "mdma_idle"
-            xpos 250
-            ypos 250
-            droppable True
-            dragged mdma_reagent_drop
-
-screen mdma_bag_screen():
-    draggroup:
-        drag:
-            drag_name "mdma"
-            child "mdma_purple"
-            xpos 250
-            ypos 250
-        drag:
-            drag_name "bag_target"
-            child "evidence_bag_idle"
-            xpos 850
-            ypos 250
-            droppable True
-            dragged mdma_bag_drop
-
-screen mdma_seal_screen():
-    add "evidence_bag"
-    draggroup:
-        drag:
-            drag_name "tamper_tape"
-            child "tamper_evident_tape_idle"
-            xpos 900
-            ypos 500
-        drag:
-            drag_name "seal_target"
-            child Null()
-            xpos 550
-            ypos 250
-            droppable True
-            dragged mdma_seal_drop
-
-screen meth_reagent_screen():
-    draggroup:
-        drag:
-            drag_name "marquis"
-            child "marquis_reagent_idle"
-            xpos 850
-            ypos 500
-        drag:
-            drag_name "target"
-            child "meth_idle"
-            xpos 250
-            ypos 250
-            droppable True
-            dragged meth_reagent_drop
-
-screen meth_bag_screen():
-    draggroup:
-        drag:
-            drag_name "meth"
-            child "meth_brown"
-            xpos 250
-            ypos 250
-        drag:
-            drag_name "bag_target"
-            child "evidence_bag_idle"
-            xpos 850
-            ypos 250
-            droppable True
-            dragged meth_bag_drop
-
-screen meth_seal_screen():
-    add "evidence_bag"
-    draggroup:
-        drag:
-            drag_name "tamper_tape"
-            child "tamper_evident_tape_idle"
-            xpos 900
-            ypos 500
-        drag:
-            drag_name "seal_target"
-            child Null()
-            xpos 550
-            ypos 250
-            droppable True
-            dragged meth_seal_drop
         
+# screen fingerprint_processing_screen()
+
 ## Say screen ##################################################################
 ##
 ## The say screen is used to display dialogue to the player. It takes two
@@ -423,9 +268,12 @@ screen choice(items):
     style_prefix "choice"
 
     vbox:
+        ypos 0.8
+        xalign 0.5
+        spacing gui.choice_spacing
+
         for i in items:
             textbutton i.caption action i.action
-
 
 style choice_vbox is vbox
 style choice_button is button
@@ -1499,7 +1347,10 @@ transform notify_appear:
         linear .5 alpha 0.0
 
 
-style notify_frame is empty
+style notify_frame:
+    ypos gui.notify_ypos
+    xalign 0.98
+
 style notify_text is gui_text
 
 style notify_frame:
@@ -1846,18 +1697,47 @@ screen drug_processing_screen(drop_image, drop_xpos, drop_ypos):
         # Tool draggable — only when player has clicked Use on a tool
         if selected_tool is not None:
             drag:
-                drag_name selected_tool        # image name, validated in generic_drop
+                drag_name selected_tool
                 draggable True
                 droppable False
                 dragging item_dragging_package
                 dragged  generic_drop
-                xpos 0.60  ypos 0.35
-                child selected_tool            # Ren'Py resolves this as an image name
+                xpos 0.70  ypos 0.2
+                child Transform(selected_tool, zoom=1.5)
 
         # Evidence — always visible as stationary drop target
         drag:
             drag_name "drop_target"
             draggable False
             droppable True
-            xpos drop_xpos  ypos drop_ypos
-            child drop_image
+            # xpos drop_xpos  ypos drop_ypos
+            xalign 0.5  
+            yalign 0.5
+            child Transform(drop_image, zoom=2)
+
+screen drug_collection_screen():
+    modal True
+    imagebutton:
+        idle "casefile_evidence_idle"
+        hover "casefile_evidence_hover"
+        at Transform(zoom=2)
+        xalign 0.5
+        yalign 0.5
+        action [
+            SetVariable("collect_step_flag", True),
+            Return()
+        ]
+
+init python:
+    def collect_current_evidence():
+        global testing_item
+
+        if testing_item is None:
+            return
+
+        testing_item = None
+        selected_tool = None
+        collect_step_flag = False
+        quiz_pending = False
+
+        renpy.jump("evidence_done")
