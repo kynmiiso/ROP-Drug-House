@@ -139,3 +139,6 @@ init -5 python:
     def use_backing_card():         _use_tool("Backing Card")
     def use_tape():                 _use_tool("Tape")
     def use_uv_light():             _use_tool("UV Light")
+    def use_magnetic_powder():      _use_tool("Magnetic Powder")
+    def use_scalebar():             _use_tool("Scalebar")
+    def use_pen():                  _use_tool("Pen")

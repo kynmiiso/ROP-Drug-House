@@ -3,6 +3,7 @@ image house interior = "images/Scenes/forensics_house_interior_placeholder.jpg"
 image house interior zoom1 = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
 image house interior zoom2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.png"
 image house interior zoom3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.png"
+image house interior zoom4 = "images/Scenes/forensics_house_interior_placeholder_zoom_4.png"
 
 init python:
     import json
@@ -27,7 +28,7 @@ init python:
 
 default evidence_found = {
         "firearm":             False,
-        "firearm_fingerprint": False,
+        "fingerprint":         False,
         "mdma_presumptive":    False,
         "mdma_packaged":       False,
         "mdma_processed":      False,
@@ -69,7 +70,21 @@ default valid_evidence_steps = {
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
+        "firearm": [
+            {"firearm_idle":                        "uv_light_idle"},
+            {"firearm_light_idle":                  "magnetic_powder_idle"}, 
+            {"firearm_fingerprint_idle":            "scalebar_idle"},
+            {"fingerprint_scalebar_idle":           "tape_idle"}
+            {"lifed_fingerprint_idle":              "backing_card_idle"}, 
+            {"fingerprint_backing_idle":            "pen_idle"}, 
+            {"fingerprint_backing_initial_idle":    "evidence_bag_idle"}, 
+            {"evidence_bag_idle":                   "tamper_evident_tape_idle"}, 
+            {"firearm_idle":                        "evidence_bag_idle"}, 
+            {"evidence_bag_idle":                   "tamper_evident_tape_idle"}
+            "collect_step"
+        ]
     }
+    # note: add both the firearm and the fingerprint to evidence.json and when loading in evidence 
 
 # positions on main screen per item
 default evidence_positions = {
