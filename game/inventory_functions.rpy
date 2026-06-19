@@ -20,6 +20,9 @@ init -5 python:
         "backing_card_idle":         "backing_card_idle",
         "tape_idle":                 "tape_idle",
         "uv_light_idle":             "uv_light_idle",
+        "magnetic_powder_idle":      "magnetic_powder_idle", 
+        "scalebar_idle":             "scalebar_idle", 
+        "pen_idle":                  "pen_idle"
     }
 
     # Map toolbox item names (from toolbox.json "name" field) to their
@@ -35,6 +38,9 @@ init -5 python:
         "Backing Card":         "backing_card_idle",
         "Tape":                 "tape_idle",
         "UV Light":             "uv_light_idle",
+        "Magnetic Powder":      "magnetic_powder_idle", 
+        "Scalebar":             "scalebar_idle", 
+        "Pen":                  "pen_idle"
     }
 
     def _get_current_step():

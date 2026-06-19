@@ -16,10 +16,11 @@ init python:
 
     evids = load_items("jsons/evidence.json")
     evids_by_key = {
-        "cocaine": evids.get("Cocaine Sample"),
-        "mdma": evids.get("MDMA Sample"),
-        "meth": evids.get("Meth Sample"),
+        "cocaine":     evids.get("Cocaine Sample"),
+        "mdma":        evids.get("MDMA Sample"),
+        "meth":        evids.get("Meth Sample"),
         "fingerprint": evids.get("Fingerprint"),
+        "firearm":     evids.get("Firearm")
     }
 
     tools = load_items("jsons/toolbox.json")
@@ -27,22 +28,20 @@ init python:
         toolbox.add_to_inventory(tool)
 
 default evidence_found = {
-        "firearm":             False,
-        "fingerprint":         False,
-        "mdma_presumptive":    False,
-        "mdma_packaged":       False,
-        "mdma_processed":      False,
-        "meth_presumptive":    False,
-        "meth_packaged":       False,
-        "meth_processed":      False,
-        "cocaine_presumptive": False,
-        "cocaine_packaged":    False,
-        "cocaine_processed":   False,   # all the drag and drop steps are done, awaiting collect click
+        "firearm_processed":            False,
+        "firearm_packaged":             False,
+        "fingerprint_processed":        False,
+        "mdma_presumptive":             False,
+        "mdma_packaged":                False,
+        "mdma_processed":               False,
+        "meth_presumptive":             False,
+        "meth_packaged":                False,
+        "meth_processed":               False,
+        "cocaine_presumptive":          False,
+        "cocaine_packaged":             False,
+        "cocaine_processed":            False,
     }
 
-# valid step definitions 
-# quiz is a marker that triggers the ID question in between steps
-# collect_step is a marker that shows the bagged evidence
 default valid_evidence_steps = {
         "cocaine": [
             {"cocaine_idle":            "tube_idle"},
@@ -74,30 +73,30 @@ default valid_evidence_steps = {
             {"firearm_idle":                        "uv_light_idle"},
             {"firearm_light_idle":                  "magnetic_powder_idle"}, 
             {"firearm_fingerprint_idle":            "scalebar_idle"},
-            {"fingerprint_scalebar_idle":           "tape_idle"}
-            {"lifed_fingerprint_idle":              "backing_card_idle"}, 
+            {"fingerprint_scalebar_idle":           "tape_idle"},
+            {"lifted_fingerprint_idle":             "backing_card_idle"}, 
             {"fingerprint_backing_idle":            "pen_idle"}, 
             {"fingerprint_backing_initial_idle":    "evidence_bag_idle"}, 
-            {"evidence_bag_idle":                   "tamper_evident_tape_idle"}, 
+            {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
+            "fingerprint_collect",
             {"firearm_idle":                        "evidence_bag_idle"}, 
-            {"evidence_bag_idle":                   "tamper_evident_tape_idle"}
+            {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
             "collect_step"
         ]
     }
-    # note: add both the firearm and the fingerprint to evidence.json and when loading in evidence 
 
-# positions on main screen per item
 default evidence_positions = {
         "cocaine": (0.15, 0.70),
         "mdma":    (0.50, 0.65),
         "meth":    (0.30, 0.80),
+        "firearm": (0.40, 0.30),
     }
 
-# step index for each item (counts drag steps only)
 default evidence_step_index = {
         "cocaine": 0,
         "mdma":    0,
         "meth":    0,
+        "firearm": 0,
     }
 
 default testing_item        = None
@@ -112,16 +111,11 @@ default meth_id_confirmed    = False
 default collected_evidence_inventory = []
 default evidence_inventory = {}
 
-# ---------------------------------------------------------------------------
-# Helper: get the current step dict for the active item
-# Returns the step dict, or None if all steps done or quiz is next
-# ---------------------------------------------------------------------------
 init python:
     def _total_drag_steps(item):
         return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
 
     def _current_drop_image():
-        """Return the drop target image for the current drag step."""
         if testing_item is None:
             return None
         steps = valid_evidence_steps.get(testing_item, [])
@@ -135,12 +129,10 @@ init python:
         return None
     
     def _quiz_is_next():
-        """Checks if a quiz marker directly follows our current drag index position."""
         if testing_item is None:
             return False
         steps = valid_evidence_steps.get(testing_item, [])
         idx = evidence_step_index.get(testing_item, 0)
-        
         drag_index = 0
         for i, s in enumerate(steps):
             if isinstance(s, dict):
@@ -152,7 +144,6 @@ init python:
         return False
 
     def _collect_step_is_next():
-        """Checks if a collect_step is the next drag index position."""
         if testing_item is None:
             return False
         steps = valid_evidence_steps.get(testing_item, [])
@@ -162,16 +153,31 @@ init python:
             if isinstance(s, dict):
                 if drag_index == idx:
                     for j in range(i+1, len(steps)):
-                        if steps[j] == "collect_step":
+                        if steps[j] in ("collect_step", "fingerprint_collect"):
                             return True
                         if isinstance(steps[j], dict):
                             return False
                 drag_index += 1
         return False
 
-# ---------------------------------------------------------------------------
-# Quiz data per item
-# ---------------------------------------------------------------------------
+    def _fingerprint_collect_is_next():
+        """Checks if a fingerprint_collect marker directly follows our current drag index."""
+        if testing_item is None:
+            return False
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = evidence_step_index.get(testing_item, 0)
+        drag_index = 0
+        for i, s in enumerate(steps):
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    for j in range(i+1, len(steps)):
+                        if steps[j] == "fingerprint_collect":
+                            return True
+                        if isinstance(steps[j], dict):
+                            return False
+                drag_index += 1
+        return False
+
 init python:
     _QUIZ = {
         "cocaine": {
@@ -203,9 +209,6 @@ init python:
         },
     }
 
-# ---------------------------------------------------------------------------
-# Room hotspot screen
-# ---------------------------------------------------------------------------
 screen investigation_buttons():
     if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
         imagebutton:
@@ -254,10 +257,27 @@ screen investigation_buttons():
             ]
     elif evidence_found["meth_packaged"]:
         add "marker_2" at Transform(zoom=0.5, xpos=0.30, ypos=0.80)
+    
+    if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
+        imagebutton:
+            xpos 0.4  ypos 0.3
+            idle  "firearm_idle"
+            hover "firearm_idle"
+            mouse "hover"
+            hovered   Notify("Firearm")
+            unhovered NullAction()
+            action [
+                SetVariable("testing_item",  "firearm"),
+                SetVariable("selected_tool", None),
+                Jump("inspect_evidence"),
+            ]
+    elif evidence_found["firearm_packaged"]:
+        add "marker_4" at Transform(zoom=0.5, xpos=0.4, ypos=0.3)
 
     if (evidence_found["cocaine_packaged"]
         and evidence_found["mdma_packaged"]
-        and evidence_found["meth_packaged"]):
+        and evidence_found["meth_packaged"]
+        and evidence_found["firearm_packaged"]):
         textbutton "Finish Investigation":
             xpos 0.75  ypos 0.9
             style "hud_button"
@@ -265,19 +285,12 @@ screen investigation_buttons():
             hover_background "#00a"
             action Jump("investigation_complete")
 
-# ---------------------------------------------------------------------------
-# Colour chart screen for quiz
-# ---------------------------------------------------------------------------
 screen colour_chart(chart_image):
     modal False
     add chart_image at Transform(zoom=1.2, xalign=0.3, yalign=0.2)
 
-# ---------------------------------------------------------------------------
-# Reagent color change result screen
-# ---------------------------------------------------------------------------
 screen reagent_result(item):
     modal False
-
     if item == "cocaine":
         add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif item == "mdma":
@@ -295,6 +308,8 @@ label inspect_evidence:
         scene house interior zoom2
     elif "cocaine" in testing_item:
         scene house interior zoom3
+    elif "firearm" in testing_item:
+        scene house interior zoom4
     
     label evidence_wait_step:
         if evidence_found[testing_item + "_processed"]:
@@ -308,6 +323,12 @@ label inspect_evidence:
 
         $ drop_img = _current_drop_image()
         $ xp, yp  = evidence_positions[testing_item]
+
+        if _fingerprint_collect_is_next():
+            show screen drug_processing_screen(drop_img, xp, yp)
+            $ renpy.pause(0.3)
+            jump fingerprint_collect_step
+
         show screen drug_processing_screen(drop_img, xp, yp)
         $ renpy.pause(0.3)
         jump evidence_wait_step
@@ -321,6 +342,18 @@ label inspect_evidence:
         $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ renpy.restart_interaction()
         jump evidence_done
+    
+    label fingerprint_collect_step:
+        hide screen drug_processing_screen
+        show screen drug_collection_screen
+        "Click to collect and package the lifted fingerprint."
+        $ evidence_found["fingerprint_processed"] = True
+        $ evidence_found["fingerprint_packaged"]  = True
+        $ evidence.add_to_inventory(evids_by_key["fingerprint"])
+        $ renpy.restart_interaction()
+        # return to firearm bagging steps
+        hide screen drug_collection_screen
+        jump evidence_wait_step
 
     label evidence_quiz:
         hide screen drug_processing_screen
@@ -372,17 +405,11 @@ label inspect_evidence:
         show screen investigation_buttons
         jump scene_room_loop
 
-# ---------------------------------------------------------------------------
-# scene_room_loop
-# ---------------------------------------------------------------------------
 label scene_room_loop:
     show screen investigation_buttons
     pause
     jump scene_room_loop
 
-# ---------------------------------------------------------------------------
-# Main script
-# ---------------------------------------------------------------------------
 define n = Character(name=("Nina"), image="nina")
 
 label start:
@@ -426,27 +453,28 @@ label investigation_complete:
     show nina thinknote1
     n "For now, give yourself a pat on the back!"
 
-    # reset the backend so the scene can be played again when player clicks start game for a second time (or more)
     $ testing_item = None
     $ selected_tool = None
     $ collect_step_flag = False
     $ quiz_pending = False
 
     $ evidence_found = {
-        "firearm":             False,
-        "firearm_fingerprint": False,
-        "mdma_presumptive":    False,
-        "mdma_packaged":       False,
-        "mdma_processed":      False,
-        "meth_presumptive":    False,
-        "meth_packaged":       False,
-        "meth_processed":      False,
-        "cocaine_presumptive": False,
-        "cocaine_packaged":    False,
-        "cocaine_processed":   False,
+        "firearm_processed":     False,
+        "firearm_packaged":      False,
+        "fingerprint_processed": False,
+        "fingerprint_packaged":  False,
+        "mdma_presumptive":      False,
+        "mdma_packaged":         False,
+        "mdma_processed":        False,
+        "meth_presumptive":      False,
+        "meth_packaged":         False,
+        "meth_processed":        False,
+        "cocaine_presumptive":   False,
+        "cocaine_packaged":      False,
+        "cocaine_processed":     False,
     }
 
-    $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0}
+    $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0, "firearm": 0}
 
     $ cocaine_id_confirmed = False
     $ mdma_id_confirmed    = False
