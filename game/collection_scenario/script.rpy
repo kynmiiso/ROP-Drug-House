@@ -108,6 +108,8 @@ default cocaine_id_confirmed = False
 default mdma_id_confirmed    = False
 default meth_id_confirmed    = False
 
+default fingerprint_collected = False
+
 default collected_evidence_inventory = []
 default evidence_inventory = {}
 
@@ -323,16 +325,26 @@ label inspect_evidence:
 
         $ drop_img = _current_drop_image()
         $ xp, yp  = evidence_positions[testing_item]
-
-        if _fingerprint_collect_is_next():
-            show screen drug_processing_screen(drop_img, xp, yp)
-            $ renpy.pause(0.3)
-            jump fingerprint_collect_step
-
         show screen drug_processing_screen(drop_img, xp, yp)
         $ renpy.pause(0.3)
+
+        if _fingerprint_collect_is_next() and not fingerprint_collected:
+            jump fingerprint_collect_step
+
         jump evidence_wait_step
         
+    label fingerprint_collect_step:
+        hide screen drug_processing_screen
+        show screen drug_collection_screen
+        "Click to collect and package the lifted fingerprint."
+        $ evidence_found["fingerprint_processed"] = True
+        $ evidence_found["fingerprint_packaged"]  = True
+        $ evidence.add_to_inventory(evids_by_key["fingerprint"])
+        $ fingerprint_collected = True
+        $ renpy.restart_interaction()
+        hide screen drug_collection_screen
+        jump evidence_wait_step
+
     label collect_step:
         hide screen drug_processing_screen
         show screen drug_collection_screen
@@ -342,18 +354,6 @@ label inspect_evidence:
         $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ renpy.restart_interaction()
         jump evidence_done
-    
-    label fingerprint_collect_step:
-        hide screen drug_processing_screen
-        show screen drug_collection_screen
-        "Click to collect and package the lifted fingerprint."
-        $ evidence_found["fingerprint_processed"] = True
-        $ evidence_found["fingerprint_packaged"]  = True
-        $ evidence.add_to_inventory(evids_by_key["fingerprint"])
-        $ renpy.restart_interaction()
-        # return to firearm bagging steps
-        hide screen drug_collection_screen
-        jump evidence_wait_step
 
     label evidence_quiz:
         hide screen drug_processing_screen
@@ -392,14 +392,15 @@ label inspect_evidence:
         hide screen drug_processing_screen
         hide screen colour_chart
         hide screen reagent_result
-        hide screen Inventory
+        hide screen inventory
         scene house interior
 
         $ testing_item = None
         $ selected_tool = None
         $ collect_step_flag = False
         $ quiz_pending = False
-
+        $ fingerprint_collected = False
+        
         $ renpy.restart_interaction()
 
         show screen investigation_buttons

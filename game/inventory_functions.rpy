@@ -4,11 +4,6 @@ init -5 python:
         global default_mouse
         default_mouse = "hand_grab"
 
-    # ------------------------------------------------------------------
-    # Map tool image names (as they appear in valid_evidence_steps values)
-    # to the drag_name key used to identify the tool in a drop callback.
-    # This is how we check "did the player drag the right thing?"
-    # ------------------------------------------------------------------
     _IMAGE_TO_DRAG_NAME = {
         "marquis_reagent_idle":      "marquis_reagent_idle",
         "cobalt_thiocynate_idle":    "cobalt_thiocynate_idle",
@@ -20,13 +15,11 @@ init -5 python:
         "backing_card_idle":         "backing_card_idle",
         "tape_idle":                 "tape_idle",
         "uv_light_idle":             "uv_light_idle",
-        "magnetic_powder_idle":      "magnetic_powder_idle", 
-        "scalebar_idle":             "scalebar_idle", 
+        "magnetic_powder_idle":      "magnetic_powder_idle",
+        "scalebar_idle":             "scalebar_idle",
         "pen_idle":                  "pen_idle"
     }
 
-    # Map toolbox item names (from toolbox.json "name" field) to their
-    # image_name_idle used in valid_evidence_steps
     _TOOL_NAME_TO_IMAGE = {
         "Marquis Reagent":      "marquis_reagent_idle",
         "Cobalt Thiocynate":    "cobalt_thiocynate_idle",
@@ -38,37 +31,88 @@ init -5 python:
         "Backing Card":         "backing_card_idle",
         "Tape":                 "tape_idle",
         "UV Light":             "uv_light_idle",
-        "Magnetic Powder":      "magnetic_powder_idle", 
-        "Scalebar":             "scalebar_idle", 
+        "Magnetic Powder":      "magnetic_powder_idle",
+        "Scalebar":             "scalebar_idle",
         "Pen":                  "pen_idle"
     }
 
     def _get_current_step():
-        """Return the current non-quiz step dict for testing_item, or None."""
+        """Return the current drag step dict for testing_item at evidence_step_index."""
         if testing_item is None:
             return None
         steps = valid_evidence_steps.get(testing_item, [])
         idx = store.evidence_step_index.get(testing_item, 0)
         drag_step = 0
         for s in steps:
-            if s == "quiz":
-                continue
-            if drag_step == idx:
-                return s
-            drag_step += 1
+            if isinstance(s, dict):
+                if drag_step == idx:
+                    return s
+                drag_step += 1
+        return None
+
+    def _next_marker_after_current():
+        """
+        Return the string marker (quiz/collect_step/fingerprint_collect) that
+        immediately follows the CURRENT drag step index, or None if the next
+        thing is another dict step or end of list.
+        Only looks at the very next entry after the current drag step position —
+        does NOT scan past further dict steps.
+        """
+        if testing_item is None:
+            return None
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = store.evidence_step_index.get(testing_item, 0)
+        drag_count = 0
+        for i, s in enumerate(steps):
+            if isinstance(s, dict):
+                if drag_count == idx:
+                    if i + 1 < len(steps) and isinstance(steps[i + 1], str):
+                        return steps[i + 1]
+                    return None
+                drag_count += 1
+        return None
+
+    def _fingerprint_collect_is_next():
+        return _next_marker_after_current() == "fingerprint_collect"
+
+    def _quiz_is_next():
+        return _next_marker_after_current() == "quiz"
+
+    def _collect_step_is_next():
+        return _next_marker_after_current() == "collect_step"
+
+    def _skip_marker(marker_name):
+        """
+        After completing a string marker step (e.g. fingerprint_collect),
+        advance the internal position past it so we don't re-trigger it.
+        We do this by tracking a separate marker offset on the store.
+        Since markers don't consume evidence_step_index (only dicts do),
+        we use a per-item marker index to know which string markers we've passed.
+        """
+        store.fingerprint_collected = True
+
+    def _total_drag_steps(item):
+        return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
+
+    def _current_drop_image():
+        if testing_item is None:
+            return None
+        steps = valid_evidence_steps.get(testing_item, [])
+        idx = store.evidence_step_index.get(testing_item, 0)
+        drag_index = 0
+        for s in steps:
+            if isinstance(s, dict):
+                if drag_index == idx:
+                    return list(s.keys())[0]
+                drag_index += 1
         return None
 
     def _advance_step():
-        """Advance evidence_step_index for testing_item past any following quiz."""
         steps = valid_evidence_steps.get(testing_item, [])
         idx = store.evidence_step_index.get(testing_item, 0)
         store.evidence_step_index[testing_item] = idx + 1
+
     def generic_drop(drags, drop):
-        """
-        Single drop callback used by the generic drag screen.
-        Checks whether the dragged tool image matches the correct tool
-        for the current step of the active evidence item.
-        """
         if not drop:
             store.selected_tool = None
             renpy.restart_interaction()
@@ -89,40 +133,18 @@ init -5 python:
             store.selected_tool = None
             renpy.restart_interaction()
             return False
-        _advance_step()
-        
-        current_idx = store.evidence_step_index.get(store.testing_item, 0)
-        steps = store.valid_evidence_steps.get(store.testing_item, [])
-        drag_counter = 0
-        next_marker = None
-        
-        for item in steps:
-            if isinstance(item, dict):
-                drag_counter += 1
-            else:
-                if drag_counter == current_idx:
-                    next_marker = item
-                    break
 
-        if next_marker == "quiz":
+        _advance_step()
+
+        marker = _next_marker_after_current()
+
+        if marker == "quiz":
             store.evidence_found[store.testing_item + "_presumptive"] = True
             store.quiz_pending = True
-        elif next_marker == "collect_step":
-            store.evidence_found[store.testing_item + "_packaged"] = True
-
-        total_drag_steps = sum(1 for s in steps if isinstance(s, dict))
-        if current_idx >= total_drag_steps:
-            store.evidence_found[store.testing_item + "_packaged"] = True
-
+        
         store.selected_tool = None
         renpy.restart_interaction()
         return True
-
-    # ------------------------------------------------------------------
-    # use_* functions called when player clicks the hand icon.
-    # Sets selected_tool to this tool's image name.
-    # The drag screen will show it as a draggable.
-    # ------------------------------------------------------------------
 
     def _use_tool(tool_name):
         if testing_item is None:
