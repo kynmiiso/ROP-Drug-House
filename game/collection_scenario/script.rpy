@@ -108,10 +108,11 @@ default cocaine_id_confirmed = False
 default mdma_id_confirmed    = False
 default meth_id_confirmed    = False
 
-default fingerprint_collected = False
-
 default collected_evidence_inventory = []
 default evidence_inventory = {}
+
+default fingerprint_collect_ready   = False
+default collect_step_ready          = False
 
 init python:
     def _total_drag_steps(item):
@@ -320,20 +321,21 @@ label inspect_evidence:
         if quiz_pending:
             jump evidence_quiz
 
-        if evidence_step_index[testing_item] >= _total_drag_steps(testing_item):
+        # generic_drop sets these flags after the correct step completes
+        if fingerprint_collect_ready:
+            jump fingerprint_collect_step
+
+        if collect_step_ready:
             jump collect_step
 
         $ drop_img = _current_drop_image()
         $ xp, yp  = evidence_positions[testing_item]
         show screen drug_processing_screen(drop_img, xp, yp)
         $ renpy.pause(0.3)
-
-        if _fingerprint_collect_is_next() and not fingerprint_collected:
-            jump fingerprint_collect_step
-
         jump evidence_wait_step
-        
+
     label fingerprint_collect_step:
+        $ fingerprint_collect_ready = False
         hide screen drug_processing_screen
         show screen drug_collection_screen
         "Click to collect and package the lifted fingerprint."
@@ -346,6 +348,7 @@ label inspect_evidence:
         jump evidence_wait_step
 
     label collect_step:
+        $ collect_step_ready = False
         hide screen drug_processing_screen
         show screen drug_collection_screen
         "Click to collect and package the evidence."
@@ -395,12 +398,14 @@ label inspect_evidence:
         hide screen inventory
         scene house interior
 
-        $ testing_item = None
-        $ selected_tool = None
-        $ collect_step_flag = False
-        $ quiz_pending = False
-        $ fingerprint_collected = False
-        
+        $ testing_item              = None
+        $ selected_tool             = None
+        $ collect_step_flag         = False
+        $ quiz_pending              = False
+        $ fingerprint_collected     = False
+        $ fingerprint_collect_ready = False
+        $ collect_step_ready        = False
+
         $ renpy.restart_interaction()
 
         show screen investigation_buttons

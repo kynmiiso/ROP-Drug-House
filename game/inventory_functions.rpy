@@ -37,7 +37,6 @@ init -5 python:
     }
 
     def _get_current_step():
-        """Return the current drag step dict for testing_item at evidence_step_index."""
         if testing_item is None:
             return None
         steps = valid_evidence_steps.get(testing_item, [])
@@ -49,47 +48,6 @@ init -5 python:
                     return s
                 drag_step += 1
         return None
-
-    def _next_marker_after_current():
-        """
-        Return the string marker (quiz/collect_step/fingerprint_collect) that
-        immediately follows the CURRENT drag step index, or None if the next
-        thing is another dict step or end of list.
-        Only looks at the very next entry after the current drag step position —
-        does NOT scan past further dict steps.
-        """
-        if testing_item is None:
-            return None
-        steps = valid_evidence_steps.get(testing_item, [])
-        idx = store.evidence_step_index.get(testing_item, 0)
-        drag_count = 0
-        for i, s in enumerate(steps):
-            if isinstance(s, dict):
-                if drag_count == idx:
-                    if i + 1 < len(steps) and isinstance(steps[i + 1], str):
-                        return steps[i + 1]
-                    return None
-                drag_count += 1
-        return None
-
-    def _fingerprint_collect_is_next():
-        return _next_marker_after_current() == "fingerprint_collect"
-
-    def _quiz_is_next():
-        return _next_marker_after_current() == "quiz"
-
-    def _collect_step_is_next():
-        return _next_marker_after_current() == "collect_step"
-
-    def _skip_marker(marker_name):
-        """
-        After completing a string marker step (e.g. fingerprint_collect),
-        advance the internal position past it so we don't re-trigger it.
-        We do this by tracking a separate marker offset on the store.
-        Since markers don't consume evidence_step_index (only dicts do),
-        we use a per-item marker index to know which string markers we've passed.
-        """
-        store.fingerprint_collected = True
 
     def _total_drag_steps(item):
         return sum(1 for s in valid_evidence_steps.get(item, []) if isinstance(s, dict))
@@ -107,8 +65,51 @@ init -5 python:
                 drag_index += 1
         return None
 
+    def _marker_after_index(item, idx):
+        """
+        Return the string marker immediately following dict step at position idx,
+        or None if the next entry is another dict or end of list.
+        """
+        steps = valid_evidence_steps.get(item, [])
+        drag_count = 0
+        for i, s in enumerate(steps):
+            if isinstance(s, dict):
+                if drag_count == idx:
+                    if i + 1 < len(steps) and isinstance(steps[i + 1], str):
+                        return steps[i + 1]
+                    return None
+                drag_count += 1
+        return None
+
+    def _quiz_is_next():
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        return _marker_after_index(testing_item, idx) == "quiz"
+
+    def _fingerprint_collect_is_next():
+        """
+        True only when the COMPLETED step (idx - 1) has fingerprint_collect
+        immediately after it — meaning we just finished the tamper tape step
+        that precedes the fingerprint_collect marker.
+        """
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        if idx == 0:
+            return False
+        # Check marker after the step we just completed (idx - 1)
+        return _marker_after_index(testing_item, idx - 1) == "fingerprint_collect"
+
+    def _collect_step_is_next():
+        if testing_item is None:
+            return False
+        idx = store.evidence_step_index.get(testing_item, 0)
+        if idx == 0:
+            return False
+        return _marker_after_index(testing_item, idx - 1) == "collect_step"
+
     def _advance_step():
-        steps = valid_evidence_steps.get(testing_item, [])
         idx = store.evidence_step_index.get(testing_item, 0)
         store.evidence_step_index[testing_item] = idx + 1
 
@@ -136,12 +137,18 @@ init -5 python:
 
         _advance_step()
 
-        marker = _next_marker_after_current()
+        # Check marker after the step we just completed
+        new_idx = store.evidence_step_index.get(store.testing_item, 0)
+        marker = _marker_after_index(store.testing_item, new_idx - 1)
 
         if marker == "quiz":
             store.evidence_found[store.testing_item + "_presumptive"] = True
             store.quiz_pending = True
-        
+        elif marker == "fingerprint_collect":
+            store.fingerprint_collect_ready = True
+        elif marker == "collect_step":
+            store.collect_step_ready = True
+
         store.selected_tool = None
         renpy.restart_interaction()
         return True
