@@ -5,6 +5,10 @@ init -5 python:
         default_mouse = "hand_grab"
 
     _IMAGE_TO_DRAG_NAME = {
+        "marker_1": "marker_1",
+        "marker_2": "marker_2",
+        "marker_3": "marker_3",
+        "marker_4": "marker_4",
         "marquis_reagent_idle":      "marquis_reagent_idle",
         "cobalt_thiocynate_idle":    "cobalt_thiocynate_idle",
         "hydrochloric_acid_idle":    "hydrochloric_acid_idle",
@@ -21,6 +25,7 @@ init -5 python:
     }
 
     _TOOL_NAME_TO_IMAGE = {
+        "Evidence Markers":     "marker_dynamic",
         "Marquis Reagent":      "marquis_reagent_idle",
         "Cobalt Thiocynate":    "cobalt_thiocynate_idle",
         "Hydrochloric Acid":    "hydrochloric_acid_idle",
@@ -129,7 +134,16 @@ init -5 python:
 
         correct_tool_image = list(step.values())[0]
 
-        if dragged_image != correct_tool_image:
+        if correct_tool_image == "marker_dynamic":
+            order = store.evidence_visited_order
+            expected = "marker_" + str(order.index(store.testing_item) + 1)
+            if dragged_image != expected:
+                renpy.notify("That's not the right tool for this step.")
+                store.selected_tool = None
+                renpy.restart_interaction()
+                return False
+            store.evidence_marker_placed[store.testing_item] = True
+        elif dragged_image != correct_tool_image:
             renpy.notify("That's not the right tool for this step.")
             store.selected_tool = None
             renpy.restart_interaction()
@@ -137,7 +151,6 @@ init -5 python:
 
         _advance_step()
 
-        # Check marker after the step we just completed
         new_idx = store.evidence_step_index.get(store.testing_item, 0)
         marker = _marker_after_index(store.testing_item, new_idx - 1)
 
@@ -161,6 +174,19 @@ init -5 python:
         if image_name is None:
             renpy.notify("This tool can't be used here.")
             return
+        store.selected_tool = image_name
+        renpy.restart_interaction()
+
+    def use_evidence_markers():
+        if testing_item is None:
+            renpy.notify("Select an evidence item first.")
+            return
+        order = store.evidence_visited_order
+        if testing_item not in order:
+            renpy.notify("This evidence hasn't been logged yet.")
+            return
+        num = order.index(testing_item) + 1
+        image_name = "marker_" + str(num)
         store.selected_tool = image_name
         renpy.restart_interaction()
 

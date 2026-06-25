@@ -44,6 +44,7 @@ default evidence_found = {
 
 default valid_evidence_steps = {
         "cocaine": [
+            {"drop_target_idle":        "marker_dynamic"},
             {"cocaine_idle":            "tube_idle"},
             {"cocaine_tube":            "cobalt_thiocynate_idle"},
             {"cocaine_blue":            "hydrochloric_acid_idle"},
@@ -54,6 +55,7 @@ default valid_evidence_steps = {
             "collect_step"
         ],
         "mdma": [
+            {"drop_target_idle":        "marker_dynamic"},
             {"mdma_idle":               "tube_idle"},
             {"mdma_tube":               "marquis_reagent_idle"},
             "quiz",
@@ -63,6 +65,7 @@ default valid_evidence_steps = {
             "collect_step"
         ],
         "meth": [
+            {"drop_target_idle":        "marker_dynamic"},
             {"meth_idle":               "tube_idle"},
             {"meth_tube":               "marquis_reagent_idle"},
             "quiz",
@@ -72,6 +75,7 @@ default valid_evidence_steps = {
             "collect_step"
         ],
         "firearm": [
+            {"drop_target_idle":                    "marker_dynamic"},
             {"firearm_idle":                        "uv_light_idle"},
             {"firearm_light_idle":                  "magnetic_powder_idle"}, 
             {"firearm_fingerprint_idle":            "scalebar_idle"},
@@ -94,6 +98,13 @@ default evidence_positions = {
         "firearm": (0.40, 0.30),
     }
 
+default marker_drop_positions = {
+        "cocaine": (0.35, 0.62),
+        "mdma":    (0.40, 0.57),
+        "meth":    (0.22, 0.72),
+        "firearm": (0.32, 0.22),
+    }
+
 default evidence_step_index = {
         "cocaine": 0,
         "mdma":    0,
@@ -101,6 +112,14 @@ default evidence_step_index = {
         "firearm": 0,
     }
 
+default evidence_marker_placed = {
+        "cocaine": False,
+        "mdma":    False,
+        "meth":    False,
+        "firearm": False,
+    }
+
+default evidence_visited_order = []
 default testing_item        = None
 default selected_tool       = None
 default quiz_pending        = False
@@ -183,6 +202,12 @@ init python:
                 drag_index += 1
         return False
 
+    def _is_marker_step():
+        step = _get_current_step()
+        if step is None:
+            return False
+        return list(step.values())[0] == "marker_dynamic"
+
 init python:
     _QUIZ = {
         "cocaine": {
@@ -214,7 +239,17 @@ init python:
         },
     }
 
+screen placed_marker_display(marker_image):
+    add marker_image at Transform(xpos=0.2, ypos=0.1)
+
 screen investigation_buttons():
+    # get the order of the evidence markers
+    $ _order = evidence_visited_order
+    $ cocaine_num  = (_order.index("cocaine")  + 1) if "cocaine"  in _order else None
+    $ mdma_num     = (_order.index("mdma")     + 1) if "mdma"     in _order else None
+    $ meth_num     = (_order.index("meth")     + 1) if "meth"     in _order else None
+    $ firearm_num  = (_order.index("firearm")  + 1) if "firearm"  in _order else None
+
     if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
         imagebutton:
             xpos 0.43 ypos 0.32
@@ -228,8 +263,11 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
+        if cocaine_num is not None:
+            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
     elif evidence_found["cocaine_packaged"]:
-        add "marker_1" at Transform(zoom=0.5, xpos=0.43, ypos=0.32)
+        if cocaine_num is not None:
+            add ("marker_" + str(cocaine_num)) at Transform(xpos=0.43, ypos=0.32)
     
     if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
         imagebutton:
@@ -244,8 +282,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
+        if mdma_num is not None:
+            add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
     elif evidence_found["mdma_packaged"]:
-        add "marker_3" at Transform(zoom=0.5, xpos=0.46, ypos=0.75)
+        add ("marker_" + str(mdma_num)) at Transform(xpos=0.46, ypos=0.75)
 
     if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
         imagebutton:
@@ -260,8 +300,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
+        if meth_num is not None:
+            add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
     elif evidence_found["meth_packaged"]:
-        add "marker_2" at Transform(zoom=0.5, xpos=0.30, ypos=0.80)
+        add ("marker_" + str(meth_num)) at Transform(xpos=0.30, ypos=0.80)
     
     if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
         imagebutton:
@@ -276,8 +318,10 @@ screen investigation_buttons():
                 SetVariable("selected_tool", None),
                 Jump("inspect_evidence"),
             ]
+        if firearm_num is not None:
+            add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
     elif evidence_found["firearm_packaged"]:
-        add "marker_4" at Transform(zoom=0.5, xpos=0.67, ypos=0.5)
+        add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
 
     if (evidence_found["cocaine_packaged"]
         and evidence_found["mdma_packaged"]
@@ -306,7 +350,10 @@ screen reagent_result(item):
 label inspect_evidence:
     hide screen investigation_buttons
     show screen inventory
-    
+
+    if testing_item not in evidence_visited_order:
+        $ evidence_visited_order.append(testing_item)
+
     if "mdma" in testing_item:
         scene house interior zoom1
     elif "meth" in testing_item:
@@ -315,7 +362,13 @@ label inspect_evidence:
         scene house interior zoom3
     elif "firearm" in testing_item:
         scene house interior zoom4
-    
+
+    $ _marker_num = evidence_visited_order.index(testing_item) + 1
+    $ _marker_img = "marker_" + str(_marker_num)
+
+    if evidence_marker_placed[testing_item]:
+        show screen placed_marker_display(_marker_img)
+
     label evidence_wait_step:
         if evidence_found[testing_item + "_processed"]:
             jump evidence_done
@@ -323,15 +376,24 @@ label inspect_evidence:
         if quiz_pending:
             jump evidence_quiz
 
-        # generic_drop sets these flags after the correct step completes
         if fingerprint_collect_ready:
             jump fingerprint_collect_step
 
         if collect_step_ready:
             jump collect_step
 
+        if evidence_step_index[testing_item] > 0:
+            show screen placed_marker_display(_marker_img)
+        else:
+            hide screen placed_marker_display
+
         $ drop_img = _current_drop_image()
-        $ xp, yp  = evidence_positions[testing_item]
+        $ xp, yp = marker_drop_positions[testing_item] if _is_marker_step() else evidence_positions[testing_item]
+
+        if _is_marker_step() and not evidence_marker_placed[testing_item]:
+            if not renpy.get_screen("notify"):
+                $ renpy.notify("Place an evidence marker here")
+
         show screen drug_processing_screen(drop_img, xp, yp)
         $ renpy.pause(0.3)
         jump evidence_wait_step
@@ -355,7 +417,7 @@ label inspect_evidence:
         show screen drug_collection_screen
         "Click to collect and package the evidence."
         $ evidence_found[testing_item + "_processed"] = True
-        $ evidence_found[testing_item + "_packaged"] = True
+        $ evidence_found[testing_item + "_packaged"]  = True
         $ evidence.add_to_inventory(evids_by_key[testing_item])
         $ renpy.restart_interaction()
         jump evidence_done
@@ -373,7 +435,7 @@ label inspect_evidence:
                 hide screen colour_chart
                 hide screen reagent_result
                 "[_q['correct_msg']]"
-                
+
             "[list(_q['wrong'].keys())[0]]":
                 hide screen colour_chart
                 hide screen reagent_result
@@ -381,7 +443,7 @@ label inspect_evidence:
                 show screen inventory
                 show screen colour_chart(_q["chart"])
                 jump evidence_quiz
-                
+
             "[list(_q['wrong'].keys())[1]]":
                 hide screen colour_chart
                 hide screen reagent_result
@@ -395,6 +457,7 @@ label inspect_evidence:
     label evidence_done:
         hide screen drug_collection_screen
         hide screen drug_processing_screen
+        hide screen placed_marker_display
         hide screen colour_chart
         hide screen reagent_result
         hide screen inventory
@@ -483,6 +546,8 @@ label investigation_complete:
     }
 
     $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0, "firearm": 0}
+    $ evidence_marker_placed = {"cocaine": False, "mdma": False, "meth": False, "firearm": False}
+    $ evidence_visited_order = []
 
     $ cocaine_id_confirmed = False
     $ mdma_id_confirmed    = False

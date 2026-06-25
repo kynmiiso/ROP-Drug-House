@@ -1692,7 +1692,6 @@ style slider_slider:
 
 screen drug_processing_screen(drop_image, drop_xpos, drop_ypos):
     draggroup:
-        # Tool draggable — only when player has clicked Use on a tool
         if selected_tool is not None:
             drag:
                 drag_name selected_tool
@@ -1700,17 +1699,13 @@ screen drug_processing_screen(drop_image, drop_xpos, drop_ypos):
                 droppable False
                 dragging item_dragging_package
                 dragged  generic_drop
-                xpos 0.70  ypos 0.2
+                xpos 0.75 ypos 0.35
                 child Transform(selected_tool, zoom=1.5)
-
-        # Evidence — always visible as stationary drop target
         drag:
-            drag_name "drop_target"
+            drag_name drop_image
             draggable False
             droppable True
-            # xpos drop_xpos  ypos drop_ypos
-            xalign 0.5  
-            yalign 0.5
+            xalign 0.5 yalign 0.5
             child Transform(drop_image, zoom=2)
 
 screen drug_collection_screen():

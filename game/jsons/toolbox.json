@@ -1,5 +1,11 @@
 [
     {
+        "name": "Evidence Markers",
+        "image_name": "toolbox-evidence_markers", 
+        "usable": true, 
+        "action": "use_evidence_markers"
+    },
+    {
         "name": "Marquis Reagent",
         "image_name": "toolbox-marquis_reagent", 
         "usable": true, 
