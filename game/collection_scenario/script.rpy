@@ -1,9 +1,9 @@
 ﻿image house exterior = "images/Scenes/forensics_house_exterior_placeholder.jpg"
 image house interior = "images/Scenes/forensics_house_interior_placeholder.jpg"
 image house interior zoom1 = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
-image house interior zoom2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.png"
-image house interior zoom3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.png"
-image house interior zoom4 = "images/Scenes/forensics_house_interior_placeholder_zoom_4.png"
+image house interior zoom2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
+image house interior zoom3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
+image house interior zoom4 = "images/Scenes/forensics_house_interior_placeholder_zoom_4.jpg"
 
 init python:
     import json
@@ -57,7 +57,8 @@ default valid_evidence_steps = {
             {"mdma_idle":               "tube_idle"},
             {"mdma_tube":               "marquis_reagent_idle"},
             "quiz",
-            {"mdma_idle":               "evidence_bag_idle"},
+            {"mdma_idle":               "tube_idle"},
+            {"mdma_tube":               "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
@@ -65,7 +66,8 @@ default valid_evidence_steps = {
             {"meth_idle":               "tube_idle"},
             {"meth_tube":               "marquis_reagent_idle"},
             "quiz",
-            {"meth_idle":               "evidence_bag_idle"},
+            {"meth_idle":               "tube_idle"},
+            {"meth_tube":               "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
@@ -215,7 +217,7 @@ init python:
 screen investigation_buttons():
     if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
         imagebutton:
-            xpos 0.15  ypos 0.70
+            xpos 0.43 ypos 0.32
             idle  ("cocaine_idle" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
             hover ("cocaine_hover" if not evidence_found["cocaine_presumptive"] else "cocaine_blue")
             mouse "hover"
@@ -227,15 +229,15 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["cocaine_packaged"]:
-        add "marker_1" at Transform(zoom=0.5, xpos=0.15, ypos=0.70)
+        add "marker_1" at Transform(zoom=0.5, xpos=0.43, ypos=0.32)
     
     if not evidence_found["mdma_processed"] and not evidence_found["mdma_packaged"]:
         imagebutton:
-            xpos 0.50  ypos 0.65
-            idle  ("mdma_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
-            hover ("mdma_hover" if not evidence_found["mdma_presumptive"] else "mdma_purple")
+            xpos 0.46 ypos 0.75
+            idle  ("drawer_idle" if not evidence_found["mdma_presumptive"] else "mdma_purple")
+            hover ("drawer_hover" if not evidence_found["mdma_presumptive"] else "mdma_purple")
             mouse "hover"
-            hovered   Notify("Suspected drugs")
+            hovered   Notify("Drawer")
             unhovered NullAction()
             action [
                 SetVariable("testing_item",  "mdma"),
@@ -243,11 +245,11 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["mdma_packaged"]:
-        add "marker_3" at Transform(zoom=0.5, xpos=0.50, ypos=0.65)
+        add "marker_3" at Transform(zoom=0.5, xpos=0.46, ypos=0.75)
 
     if not evidence_found["meth_processed"] and not evidence_found["meth_packaged"]:
         imagebutton:
-            xpos 0.30  ypos 0.80
+            xpos 0.30 ypos 0.80
             idle  ("meth_idle" if not evidence_found["meth_presumptive"] else "meth_brown")
             hover ("meth_hover" if not evidence_found["meth_presumptive"] else "meth_brown")
             mouse "hover"
@@ -263,7 +265,7 @@ screen investigation_buttons():
     
     if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
         imagebutton:
-            xpos 0.4  ypos 0.3
+            xpos 0.67 ypos 0.5
             idle  "firearm_idle"
             hover "firearm_idle"
             mouse "hover"
@@ -275,14 +277,14 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
     elif evidence_found["firearm_packaged"]:
-        add "marker_4" at Transform(zoom=0.5, xpos=0.4, ypos=0.3)
+        add "marker_4" at Transform(zoom=0.5, xpos=0.67, ypos=0.5)
 
     if (evidence_found["cocaine_packaged"]
         and evidence_found["mdma_packaged"]
         and evidence_found["meth_packaged"]
         and evidence_found["firearm_packaged"]):
         textbutton "Finish Investigation":
-            xpos 0.75  ypos 0.9
+            xpos 0.75 ypos 0.9
             style "hud_button"
             background "#006"
             hover_background "#00a"
