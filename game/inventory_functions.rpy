@@ -10,9 +10,7 @@ init -5 python:
         "marker_3": "marker_3",
         "marker_4": "marker_4",
         "marquis_reagent_idle":      "marquis_reagent_idle",
-        "cobalt_thiocynate_idle":    "cobalt_thiocynate_idle",
-        "hydrochloric_acid_idle":    "hydrochloric_acid_idle",
-        "chloroform_idle":           "chloroform_idle",
+        "scott_reagent_idle":        "scott_reagent_idle",
         "tube_idle":                 "tube_idle",
         "evidence_bag_idle":         "evidence_bag_idle",
         "tamper_evident_tape_idle":  "tamper_evident_tape_idle",
@@ -27,9 +25,7 @@ init -5 python:
     _TOOL_NAME_TO_IMAGE = {
         "Evidence Markers":     "marker_dynamic",
         "Marquis Reagent":      "marquis_reagent_idle",
-        "Cobalt Thiocynate":    "cobalt_thiocynate_idle",
-        "Hydrochloric Acid":    "hydrochloric_acid_idle",
-        "Chloroform":           "chloroform_idle",
+        "Scott Reagent":        "scott_reagent_idle",
         "Tube":                 "tube_idle",
         "Evidence Bag":         "evidence_bag_idle",
         "Tamper Evident Tape":  "tamper_evident_tape_idle",
@@ -191,9 +187,7 @@ init -5 python:
         renpy.restart_interaction()
 
     def use_marquis_reagent():      _use_tool("Marquis Reagent")
-    def use_cobalt_thiocynate():    _use_tool("Cobalt Thiocynate")
-    def use_hydrochloric_acid():    _use_tool("Hydrochloric Acid")
-    def use_chloroform():           _use_tool("Chloroform")
+    def use_scott_reagent():        _use_tool("Scott Reagent")
     def use_tube():                 _use_tool("Tube")
     def use_evidence_bag():         _use_tool("Evidence Bag")
     def use_tamper_evident_tape():  _use_tool("Tamper Evident Tape")

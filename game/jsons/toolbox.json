@@ -12,22 +12,10 @@
         "action": "use_marquis_reagent"
     },
     {
-        "name": "Cobalt Thiocynate",
-        "image_name": "toolbox-cobalt_thiocynate", 
+        "name": "Scott Reagent",
+        "image_name": "toolbox-scott_reagent", 
         "usable": true, 
-        "action": "use_cobalt_thiocynate"
-    },
-    {
-        "name": "Hydrochloric Acid",
-        "image_name": "toolbox-hydrochloric_acid", 
-        "usable": true, 
-        "action": "use_hydrochloric_acid"
-    },
-    {
-        "name": "Chloroform",
-        "image_name": "toolbox-chloroform", 
-        "usable": true, 
-        "action": "use_chloroform"
+        "action": "use_scott_reagent"
     },
     {
         "name": "Tube",
