@@ -24,6 +24,13 @@
         "name": "Firearm",
         "image_name": "inventory-firearm", 
         "usable": true, 
+        "action": "use_firearm"
+    },
+    {
+        "key": "firearm_fingerprint",
+        "name": "Firearm Fingerprint Photo",
+        "image_name": "inventory-firearm_fingerprint", 
+        "usable": true, 
         "action": "import_firearm_fingerprint"
     }
 ]

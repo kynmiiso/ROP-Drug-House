@@ -43,16 +43,31 @@ init python:
 
     evids = load_items("jsons/evidence.json")
     evids_by_key = {
-        "cocaine":     evids.get("Cocaine Sample"),
-        "mdma":        evids.get("MDMA Sample"),
-        "meth":        evids.get("Meth Sample"),
-        "fingerprint": evids.get("Fingerprint"),
-        "firearm":     evids.get("Firearm")
+        "cocaine":            evids.get("Cocaine Sample"),
+        "mdma":                evids.get("MDMA Sample"),
+        "meth":                evids.get("Meth Sample"),
+        "fingerprint":         evids.get("Fingerprint"),
+        "firearm":             evids.get("Firearm"),
+        "firearm_fingerprint": evids.get("Firearm Fingerprint Photo"),
     }
 
     tools = load_items("jsons/toolbox.json")
-    for tool in tools.values():
-        toolbox.add_to_inventory(tool)
+
+    SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent",
+                        "Tube", "Evidence Bag", "Tamper Evident Tape"]
+    LAB_TOOL_NAMES = ["Distilled Water", "Superglue"]
+
+    def load_scene_toolbox():
+        toolbox.reset_inventory()
+        for name in SCENE_TOOL_NAMES:
+            if name in tools:
+                toolbox.add_to_inventory(tools[name])
+
+    def load_lab_toolbox():
+        toolbox.reset_inventory()
+        for name in LAB_TOOL_NAMES:
+            if name in tools:
+                toolbox.add_to_inventory(tools[name])
 
     def set_cursor(cursor):
         global default_mouse
@@ -506,6 +521,7 @@ label skip_to_lab:
     jump lab_hallway_intro
 
 label scene_room:
+    $ load_scene_toolbox()
     scene house interior
     "You take photos of the scene and suspicious looking powder scattered about."
     show nina normal1
@@ -532,40 +548,8 @@ label investigation_complete:
     show nina thinknote1
     n "For now, give yourself a pat on the back!"
 
-    # $ testing_item = None
-    # $ selected_tool = None
-    # $ collect_step_flag = False
-    # $ quiz_pending = False
-
-    # $ evidence_found = {
-    #     "firearm_processed":     False,
-    #     "firearm_packaged":      False,
-    #     "fingerprint_processed": False,
-    #     "fingerprint_packaged":  False,
-    #     "mdma_presumptive":      False,
-    #     "mdma_packaged":         False,
-    #     "mdma_processed":        False,
-    #     "meth_presumptive":      False,
-    #     "meth_packaged":         False,
-    #     "meth_processed":        False,
-    #     "cocaine_presumptive":   False,
-    #     "cocaine_packaged":      False,
-    #     "cocaine_processed":     False,
-    # }
-
-    # $ evidence_step_index = {"cocaine": 0, "mdma": 0, "meth": 0, "firearm": 0}
-    # $ evidence_marker_placed = {"cocaine": False, "mdma": False, "meth": False, "firearm": False}
-    # $ evidence_visited_order = []
-
-    # $ cocaine_id_confirmed = False
-    # $ mdma_id_confirmed    = False
-    # $ meth_id_confirmed    = False
-
-    # $ evidence.reset_inventory()
-    # $ collected_evidence_inventory = []
-    # $ evidence_inventory = {}
-
 label lab_hallway_intro:
+    $ load_lab_toolbox()
     scene lab_hallway_idle
     show nina normal1
     n "Officer, good to see you again."
