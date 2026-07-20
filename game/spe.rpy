@@ -21,6 +21,7 @@ default step_SPE = ""
 default step_num_SPE = 1 # see ipad notes for specifics, relates to which step to do, related to the spe_spo
 default inv_call_SPE = ""
 default choice_SPE = ""
+default current_SPE_drug = ""
 
 # LAB LABELS ----------
 label lab:
@@ -43,7 +44,7 @@ label lab:
     # $ toolbox.add_to_inventory(tools["Methanol and 5% Ammonium Hydroxide"])
 
     "What would you like to start with?"
-    jump lab_choice
+    jump materials_lab
 
 # this is handled by lab_hallway_screen, materials_lab_screen, and data_analysis_lab_screen and called in script.rpy
 # label lab_choice: # may add GC-MS and GC-headspace, but these are the minimum requirements to analyse
@@ -69,6 +70,7 @@ label lab:
 label solid_phase_extraction:
     #PRE-TREATMENT
     hide screen materials_lab_screen
+    $ location = "solid_phase_extraction"
     scene lab_counter_bk
     show beaker_empty:
         xalign 0.5
@@ -79,14 +81,17 @@ label solid_phase_extraction:
     hide nina talk
     menu:
         "Cocaine Sample" if not has_SPE_cocaine:
+            $ current_SPE_drug = "cocaine"
             show beaker_drug:
                 xalign 0.5
                 yalign 0.5
         "MDMA Sample" if not has_SPE_mdma:
+            $ current_SPE_drug = "mdma"
             show beaker_drug:
                 xalign 0.5
                 yalign 0.5
         "Methamphetamine Sample" if not has_SPE_meth:
+            $ current_SPE_drug = "meth"
             show beaker_drug:
                 xalign 0.5
                 yalign 0.5
@@ -227,7 +232,7 @@ label SPE_elution2:
             # reset counter
             hide screen spe_spo
             $ step_num_SPE = 1
-            jump lab_choice
+            jump materials_lab
         # can add other choices here
 
 # toolbox stuffs for SPE
@@ -336,7 +341,7 @@ label useWater: # use water
 
 label useCocaine:
     $ has_SPE_cocaine = True
-    if(step_num_SPE == 3):
+    if(step_num_SPE == 3 and current_SPE_drug == "cocaine"):
         $ evidence.delete_from_inventory(evids["Cocaine Sample"])
         jump expression step_SPE
     else:
@@ -345,7 +350,7 @@ label useCocaine:
 
 label useMDMA:
     $ has_SPE_mdma = True
-    if(step_num_SPE == 3):
+    if(step_num_SPE == 3 and current_SPE_drug == "mdma"):
         $ evidence.delete_from_inventory(evids["MDMA Sample"])
         jump expression step_SPE
     else:
@@ -354,7 +359,7 @@ label useMDMA:
 
 label useMeth:
     $ has_SPE_meth = True
-    if(step_num_SPE == 3):
+    if(step_num_SPE == 3 and current_SPE_drug == "meth"):
         $ evidence.delete_from_inventory(evids["Meth Sample"])
         jump expression step_SPE
     else:

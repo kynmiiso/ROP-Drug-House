@@ -23,24 +23,24 @@
     {
         "key": "prepared_cocaine",
         "name": "Prepared Cocaine Sample",
-        "image_name": "prepared_sample",
-        "description": "SPE-prepared cocaine sample",
+        "image_name": "prepared_cocaine_sample",
+        "description": "Solid Phase Extraction-prepared liquid cocaine sample",
         "usable": true,
         "action": "use_prepared_cocaine"
     },
     {
         "key": "prepared_mdma",
         "name": "Prepared MDMA Sample",
-        "image_name": "prepared_sample",
-        "description": "SPE-prepared MDMA sample",
+        "image_name": "prepared_mdma_sample",
+        "description": "Solid Phase Extraction-prepared liquid MDMA sample",
         "usable": true,
         "action": "use_prepared_mdma"
     },
     {
         "key": "prepared_meth",
         "name": "Prepared Meth Sample",
-        "image_name": "prepared_sample",
-        "description": "SPE-prepared methamphetamine sample",
+        "image_name": "prepared_meth_sample",
+        "description": "Solid Phase Extraction-prepared liquid Methamphetamine sample",
         "usable": true,
         "action": "use_prepared_meth"
     },

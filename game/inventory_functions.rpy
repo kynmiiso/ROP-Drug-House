@@ -218,9 +218,11 @@ init -5 python:
             renpy.notify("Bring this to AFIS to import it.")
 
     def use_distilled_water():
-        if location != "ca_chamber":
-            renpy.notify("Bring this to the CA chamber to use it.")
+        if location != "ca_chamber" and location != "solid_phase_extraction":
+            renpy.notify("Bring this to the CA chamber or Solid Phase Extraction to use it.")
             return
+        if location == "solid_phase_extraction":
+            renpy.jump("useWater")
         store.selected_tool = "toolbox-distilled_water"
         renpy.restart_interaction()
 
