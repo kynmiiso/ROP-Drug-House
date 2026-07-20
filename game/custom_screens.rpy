@@ -30,8 +30,6 @@ screen drag_and_drop(drag_name, drag_image, drop_name, drop_image):
 
 # ---------------------------------------------------------------------------
 # Generic drug processing screen
-# Drop target image and position come from the current step dict.
-# Tool draggable only appears after player clicks Use (selected_tool set).
 # ---------------------------------------------------------------------------
 
 screen drug_processing_screen(drop_image, drop_xpos, drop_ypos):
@@ -193,7 +191,7 @@ screen lab_hallway_screen:
             # unhovered Notify('')
             action Jump('materials_lab')
 
-############################## DATA ANALYSIS ##############################
+############################## DATA ANALYSIS LAB CODE HERE ##############################
 screen data_analysis_lab_screen:
     image "afis_interface"
     hbox:
@@ -266,29 +264,139 @@ screen afis_screen:
                     text("{color=#000000}No match found in records.{/color}")
 
     
-
-    
-#################################### MATERIALS ####################################
+#################################### MATERIALS LAB CODE HERE ####################################
 screen materials_lab_screen:
     image "materials_lab"
 
     hbox:
         xpos 0.26 yalign 0.5
         imagebutton:
-            auto "gcms_%s" at Transform(zoom=0.7)
+            idle "gcms_idle"
+            hover "gcms_hover"
             action [SetVariable("location", "gcms"), Jump("gcms")]
     text "GC-MS" xpos 0.31 ypos 0.66
 
     hbox:
         xpos 0.52 yalign 0.5
         imagebutton:
-            auto "ca_chamber_%s" at Transform(zoom=0.95)
-            action [SetVariable("location", "ca_chamber"), Jump("ca_chamber")]
-    
-    text "Cyanoacrylate Chamber" xpos 0.59 ypos 0.67
+            idle "ca_chamber_idle"
+            hover "ca_chamber_hover"
+            action [SetVariable("location", "ca_chamber"), Jump("ca_chamber")]    
+    text "Cyanoacrylate Chamber" xpos 0.57 ypos 0.67
 
-screen wet_lab_screen:
-    image "ca_chamber"
+    hbox:
+        xpos 0.80 yalign 0.5
+        imagebutton:
+            idle "solid_phase_extraction_idle"
+            hover "solid_phase_extraction_hover"
+            action [SetVariable("location", "solid_phase_extraction"), Jump("solid_phase_extraction")]
+    text "Solid Phase Extraction" xpos 0.87 ypos 0.67
 
-screen analytical_instruments_screen:
-    image "lab_bench"
+screen ca_chamber_screen():
+    $ bg_image = (
+        "ca_chamber_closed" if (ca_chamber_done or ca_chamber_state in ("closed", "loaded"))
+        else "ca_chamber_firearm" if ca_chamber_firearm_placed
+        else "ca_chamber_empty"
+    )
+    add bg_image at Transform(xalign=0.5, yalign=0.5, rotate=90)
+
+    if not ca_chamber_done:
+        if ca_chamber_state == "empty":
+            draggroup:
+                if selected_tool is not None:
+                    drag:
+                        drag_name selected_tool
+                        draggable True
+                        droppable False
+                        dragging item_dragging_package
+                        dragged  ca_chamber_drop
+                        xpos 0.75 ypos 0.35
+                        child Transform(selected_tool, zoom=1.5)
+                drag:
+                    drag_name "ca_chamber_dropzone"
+                    draggable False
+                    droppable True
+                    xalign 0.5 yalign 0.5
+                    child Transform(Solid("#00000000"), size=(300, 300))
+
+            textbutton "Close Chamber":
+                xalign 0.5 ypos 0.85
+                xsize 400 ysize 90
+                text_size 42
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                insensitive_background "#3a3a3a"
+                sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
+                action Function(close_ca_chamber)
+
+        elif ca_chamber_state == "closed":
+            textbutton "Set Temperature & Time":
+                xalign 0.5 ypos 0.85
+                xsize 480 ysize 90
+                text_size 42
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                action Jump("ca_chamber_load_dialogue")
+
+screen spe_spo: # the solid phase extraction checklist
+    if(step_num_SPE == 1 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full1.png":
+            xalign 0.999999
+    elif(step_num_SPE == 1 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half1.png":
+            xalign 0.999999
+    elif(step_num_SPE <= 2 and spe_difficulty == 2):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low1.png":
+            xalign 0.999999
+    elif(step_num_SPE == 2 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full2.png":
+            xalign 0.999999
+    elif(step_num_SPE == 2 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half2.png":
+            xalign 0.999999
+    elif(step_num_SPE <= 3 and spe_difficulty == 2):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low2.png":
+            xalign 0.999999
+    elif(step_num_SPE == 3 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full3.png":
+            xalign 0.999999
+    elif(step_num_SPE == 3 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half3.png":
+            xalign 0.999999
+    elif(step_num_SPE <= 5 and spe_difficulty == 2):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low3.png":
+            xalign 0.999999
+    elif(step_num_SPE == 4 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full4.png":
+            xalign 0.999999
+    elif(step_num_SPE == 4 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half4.png":
+            xalign 0.999999
+    elif(step_num_SPE <= 6 and spe_difficulty == 2):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low4.png":
+            xalign 0.999999
+    elif(step_num_SPE == 5 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full5.png":
+            xalign 0.999999
+    elif(step_num_SPE == 5 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half5.png":
+            xalign 0.999999
+    elif(step_num_SPE <= 7 and spe_difficulty == 2):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_low5.png":
+            xalign 0.999999
+    elif(step_num_SPE == 6 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full6.png":
+            xalign 0.999999
+    elif(step_num_SPE == 6 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half6.png":
+            xalign 0.999999
+    elif(step_num_SPE == 7 and spe_difficulty == 0):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_full7.png":
+            xalign 0.999999
+    elif(step_num_SPE == 7 and spe_difficulty == 1):
+        add "images/Lab/Solid-phase extraction/spe_checklist/spe_checklist_half7.png":
+            xalign 0.999999

@@ -57,7 +57,7 @@ init python:
 
     SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent",
                         "Tube", "Evidence Bag", "Tamper Evident Tape"]
-    LAB_TOOL_NAMES = ["Distilled Water", "Superglue"]
+    LAB_TOOL_NAMES = ["Distilled Water", "Superglue", "100% Methanol", "1% Formic acid", "0.1% Formic acid", "Methanol and 5% Ammonium Hydroxide"]
 
     def load_scene_toolbox():
         toolbox.reset_inventory()
@@ -508,9 +508,7 @@ label house_intro:
     jump scene_room
 
 label skip_to_lab:
-    # Mark all scene evidence as processed/packaged and pre-load the evidence
-    # inventory so the lab flow has everything it expects, without playing
-    # through the house scene.
+    # Mark all scene evidence as processed and load the evidence for lab into inventory
     python:
         for key in evidence_found:
             evidence_found[key] = True
@@ -566,9 +564,6 @@ label lab_hallway_intro:
     $config.rollback_enabled = False # disables rollback
     $quick_menu = False # removes quick menu (at bottom of screen)
 
-    # toolbox is already populated at game start (see the `tools = load_items(...)`
-    # loop near the top of script.rpy), and evidence is populated as it's
-    # collected/skipped-to, so no extra setup is needed here beyond showing it.
     show screen inventory
 
     $ inventory_item_names = ["Cocaine sample vial", "MDMA sample vial", "Methamphetamine sample vial", "Analytical balance photo", "Weighed sample bag", "GC-MS printout",

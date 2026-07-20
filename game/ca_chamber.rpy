@@ -35,56 +35,6 @@ init python:
         store.ca_chamber_state = "closed"
         renpy.restart_interaction()
 
-screen ca_chamber_screen():
-    $ bg_image = (
-        "ca_chamber_closed" if (ca_chamber_done or ca_chamber_state in ("closed", "loaded"))
-        else "ca_chamber_firearm" if ca_chamber_firearm_placed
-        else "ca_chamber_empty"
-    )
-    add bg_image at Transform(xalign=0.5, yalign=0.5, rotate=90)
-
-    if not ca_chamber_done:
-        if ca_chamber_state == "empty":
-            draggroup:
-                if selected_tool is not None:
-                    drag:
-                        drag_name selected_tool
-                        draggable True
-                        droppable False
-                        dragging item_dragging_package
-                        dragged  ca_chamber_drop
-                        xpos 0.75 ypos 0.35
-                        child Transform(selected_tool, zoom=1.5)
-                drag:
-                    drag_name "ca_chamber_dropzone"
-                    draggable False
-                    droppable True
-                    xalign 0.5 yalign 0.5
-                    child Transform(Solid("#00000000"), size=(300, 300))
-
-            textbutton "Close Chamber":
-                xalign 0.5 ypos 0.85
-                xsize 400 ysize 90
-                text_size 42
-                text_color "#ffffff"
-                text_align 0.5
-                background "#012a4a"
-                hover_background "#0466c8"
-                insensitive_background "#3a3a3a"
-                sensitive (ca_chamber_water_added and ca_chamber_glue_added and ca_chamber_firearm_placed)
-                action Function(close_ca_chamber)
-
-        elif ca_chamber_state == "closed":
-            textbutton "Set Temperature & Time":
-                xalign 0.5 ypos 0.85
-                xsize 480 ysize 90
-                text_size 42
-                text_color "#ffffff"
-                text_align 0.5
-                background "#012a4a"
-                hover_background "#0466c8"
-                action Jump("ca_chamber_load_dialogue")
-
 label ca_chamber:
     hide screen materials_lab_screen
     $ hide_all_inventory()
