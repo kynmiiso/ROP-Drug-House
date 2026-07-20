@@ -348,7 +348,6 @@ label useCocaine:
     if location == "solid_phase_extraction":
         $ has_SPE_cocaine = True
         if(step_num_SPE == 3 and current_SPE_drug == "cocaine"):
-            $ evidence.delete_from_inventory(evids["Cocaine Sample"])
             jump expression step_SPE
         else:
             "Wrong compound!"
@@ -358,7 +357,6 @@ label useMDMA:
     if location == "solid_phase_extraction":
         $ has_SPE_mdma = True
         if(step_num_SPE == 3 and current_SPE_drug == "mdma"):
-            $ evidence.delete_from_inventory(evids["MDMA Sample"])
             jump expression step_SPE
         else:
             "Wrong compound!"
@@ -368,7 +366,6 @@ label useMeth:
     if location == "solid_phase_extraction":
         $ has_SPE_meth = True
         if(step_num_SPE == 3 and current_SPE_drug == "meth"):
-            $ evidence.delete_from_inventory(evids["Meth Sample"])
             jump expression step_SPE
         else:
             "Wrong compound!"
