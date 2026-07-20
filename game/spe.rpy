@@ -237,131 +237,139 @@ label SPE_elution2:
 
 # toolbox stuffs for SPE
 label use5Amm:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 6):
-            "Wrong compound!"
+    if location == "solid_phase_extraction":
+        if(inv_call_SPE == "SPE_dilute_question"):
+            "Wrong!"
             jump expression inv_call_SPE
+        else:
+            if(step_num_SPE != 6):
+                "Wrong compound!"
+                jump expression inv_call_SPE
 
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
+            "How much will you add?"
+            menu:
+                "1 mL":
+                    jump expression step_SPE
+                "2 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                "5 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
 
 label use01Formic:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 4):
-            "Wrong compound!"
+    if location == "solid_phase_extraction":
+        if(inv_call_SPE == "SPE_dilute_question"):
+            "Wrong!"
             jump expression inv_call_SPE
+        else:
+            if(step_num_SPE != 4):
+                "Wrong compound!"
+                jump expression inv_call_SPE
 
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
+            "How much will you add?"
+            menu:
+                "1 mL":
+                    jump expression step_SPE
+                "2 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                "5 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
 
 label useMethanol:
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 1 and step_num_SPE != 5):
-            "Wrong compound!"
+    if location == "solid_phase_extraction":
+        if(inv_call_SPE == "SPE_dilute_question"):
+            "Wrong!"
             jump expression inv_call_SPE
+        else:
+            if(step_num_SPE != 1 and step_num_SPE != 5):
+                "Wrong compound!"
+                jump expression inv_call_SPE
 
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            # can add other options here
+            "How much will you add?"
+            menu:
+                "1 mL":
+                    jump expression step_SPE
+                "2 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                "5 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                # can add other options here
 
 label useStep3: # 1% formic acid 
-    if(inv_call_SPE == "SPE_dilute_question"):
-        show nina normal1
-        "Good! Now we'll start."
-        hide nina normal1
-        jump expression step_SPE
-    else:
-        if(step_num_SPE != 2):
-            "Wrong compound!"
-            jump expression inv_call_SPE
+    if location == "solid_phase_extraction":
+        if(inv_call_SPE == "SPE_dilute_question"):
+            show nina normal1
+            "Good! Now we'll start."
+            hide nina normal1
+            jump expression step_SPE
+        else:
+            if(step_num_SPE != 2):
+                "Wrong compound!"
+                jump expression inv_call_SPE
 
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
+            "How much will you add?"
+            menu:
+                "1 mL":
+                    jump expression step_SPE
+                "2 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                "5 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
 
 label useWater: # use water
-    if(inv_call_SPE == "SPE_dilute_question"):
-        "Wrong!"
-        jump expression inv_call_SPE
-    else:
-        if(step_num_SPE != 2):
+    if location == "solid_phase_extraction":
+        if(inv_call_SPE == "SPE_dilute_question"):
+            "Wrong!"
+            jump expression inv_call_SPE
+        else:
+            if(step_num_SPE != 2):
+                "Wrong compound!"
+                jump expression inv_call_SPE
+
+            "How much will you add?"
+            menu:
+                "1 mL":
+                    jump expression step_SPE
+                "2 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+                "5 mL":
+                    "Wrong amount."
+                    jump expression inv_call_SPE
+
+label useCocaine:
+    if location == "solid_phase_extraction":
+        $ has_SPE_cocaine = True
+        if(step_num_SPE == 3 and current_SPE_drug == "cocaine"):
+            $ evidence.delete_from_inventory(evids["Cocaine Sample"])
+            jump expression step_SPE
+        else:
             "Wrong compound!"
             jump expression inv_call_SPE
 
-        "How much will you add?"
-        menu:
-            "1 mL":
-                jump expression step_SPE
-            "2 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-            "5 mL":
-                "Wrong amount."
-                jump expression inv_call_SPE
-
-label useCocaine:
-    $ has_SPE_cocaine = True
-    if(step_num_SPE == 3 and current_SPE_drug == "cocaine"):
-        $ evidence.delete_from_inventory(evids["Cocaine Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
-
 label useMDMA:
-    $ has_SPE_mdma = True
-    if(step_num_SPE == 3 and current_SPE_drug == "mdma"):
-        $ evidence.delete_from_inventory(evids["MDMA Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
+    if location == "solid_phase_extraction":
+        $ has_SPE_mdma = True
+        if(step_num_SPE == 3 and current_SPE_drug == "mdma"):
+            $ evidence.delete_from_inventory(evids["MDMA Sample"])
+            jump expression step_SPE
+        else:
+            "Wrong compound!"
+            jump expression inv_call_SPE
 
 label useMeth:
-    $ has_SPE_meth = True
-    if(step_num_SPE == 3 and current_SPE_drug == "meth"):
-        $ evidence.delete_from_inventory(evids["Meth Sample"])
-        jump expression step_SPE
-    else:
-        "Wrong compound!"
-        jump expression inv_call_SPE
+    if location == "solid_phase_extraction":
+        $ has_SPE_meth = True
+        if(step_num_SPE == 3 and current_SPE_drug == "meth"):
+            $ evidence.delete_from_inventory(evids["Meth Sample"])
+            jump expression step_SPE
+        else:
+            "Wrong compound!"
+            jump expression inv_call_SPE

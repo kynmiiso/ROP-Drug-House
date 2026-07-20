@@ -1,9 +1,3 @@
-default ca_chamber_water_added    = False
-default ca_chamber_glue_added     = False
-default ca_chamber_firearm_placed = False
-default ca_chamber_state          = "empty"   # "empty" -> "loaded" -> "closed"
-default ca_chamber_done           = False
-
 init -5 python:
 
     def item_dragging_package(drags):

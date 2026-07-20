@@ -1,3 +1,11 @@
+default ca_chamber_water_added    = False
+default ca_chamber_glue_added     = False
+default ca_chamber_firearm_placed = False
+default ca_chamber_state          = "empty"   # "empty" -> "loaded" -> "closed"
+default ca_chamber_done           = False
+default ca_chamber_step    = 1     # checklist image step from 1-8
+default ca_pending_mcq     = None  # "water" or "glue" when an mcq is open
+
 init python:
     def ca_chamber_drop(drags, drop):
         if not drop:
@@ -7,13 +15,14 @@ init python:
 
         dragged_image = drags[0].drag_name
 
-        if dragged_image == "toolbox-distilled_water" and not store.ca_chamber_water_added:
+        if dragged_image == "toolbox-distilled_water" and store.ca_chamber_step == 1 and not store.ca_chamber_water_added:
             store.ca_chamber_water_added = True
             renpy.notify("Distilled water added.")
-        elif dragged_image == "toolbox-superglue" and not store.ca_chamber_glue_added:
+        elif dragged_image == "toolbox-superglue" and store.ca_chamber_step == 2 and not store.ca_chamber_glue_added:
             store.ca_chamber_glue_added = True
             renpy.notify("Superglue added.")
-        elif dragged_image == "inventory-firearm" and not store.ca_chamber_firearm_placed:
+        elif dragged_image == "inventory-firearm" and store.ca_chamber_step == 3 and not store.ca_chamber_firearm_placed:
+            store.ca_chamber_step = 4
             store.ca_chamber_firearm_placed = True
             renpy.notify("Firearm placed in the CA chamber.")
         else:
@@ -26,6 +35,26 @@ init python:
         renpy.restart_interaction()
         return True
 
+    def check_ca_amount(item, amount):
+        if item == "water":
+            if 100 <= amount <= 200:
+                store.ca_chamber_water_added = True
+                store.ca_chamber_step = 2
+                renpy.notify("Distilled water added.")
+            else:
+                renpy.notify("Wrong.")
+        elif item == "glue":
+            if 1 <= amount <= 3:
+                store.ca_chamber_glue_added = True
+                store.ca_chamber_step = 3
+                renpy.notify("Superglue added.")
+            else:
+                renpy.notify("Wrong.")
+
+        store.ca_pending_mcq = None
+        store.selected_tool = None
+        renpy.restart_interaction()
+
     def close_ca_chamber():
         if store.ca_chamber_state != "empty":
             return
@@ -33,6 +62,7 @@ init python:
             renpy.notify("Add the distilled water, superglue, and firearm first.")
             return
         store.ca_chamber_state = "closed"
+        store.ca_chamber_step = 5
         renpy.restart_interaction()
 
 label ca_chamber:
@@ -41,6 +71,8 @@ label ca_chamber:
     $ location = "ca_chamber"
     scene materials_lab
     show screen ca_chamber_screen
+    show screen ca_chamber_checklist
+    show screen ca_chamber_amount_check
     show screen inventory
     show screen back_button_screen('materials_lab') onlayer over_screens
 
@@ -80,12 +112,14 @@ label ca_chamber_settings_confirmed:
 label ca_chamber_wait_step:
     if ca_chamber_state == "loaded" and not ca_chamber_done:
         jump ca_chamber_finish
-    $ renpy.pause(3)
+    $ renpy.pause(3.0)
     jump ca_chamber_wait_step
 
 label ca_chamber_finish:
     $ ca_chamber_done = True
+    hide screen ca_chamber_amount_check
     hide screen ca_chamber_screen
+    hide screen ca_chamber_checklist
     hide screen inventory
     hide screen back_button_screen onlayer over_screens
     show firearm_fumed at Transform(xalign=0.5, yalign=0.1)

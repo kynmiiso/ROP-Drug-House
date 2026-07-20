@@ -342,6 +342,34 @@ screen ca_chamber_screen():
                 hover_background "#0466c8"
                 action Jump("ca_chamber_load_dialogue")
 
+screen ca_chamber_checklist:
+    add "images/materials_lab/ca_chamber/ca_fuming_checklist/ca_fuming_checklist_%d.png" % ca_chamber_step:
+        xalign 0.999999
+        yalign 0.0
+
+screen ca_chamber_amount_check():
+    modal True
+    if ca_pending_mcq == "water":
+        frame:
+            xalign 0.5 yalign 0.5
+            padding (30, 30)
+            vbox:
+                spacing 15
+                text "How much distilled water will you add?" size 36
+                textbutton "50 mL"  action Function(check_ca_amount, "water", 50)
+                textbutton "100 mL" action Function(check_ca_amount, "water", 100)
+                textbutton "300 mL" action Function(check_ca_amount, "water", 300)
+    elif ca_pending_mcq == "glue":
+        frame:
+            xalign 0.5 yalign 0.5
+            padding (30, 30)
+            vbox:
+                spacing 15
+                text "How many drops of superglue will you add?" size 36
+                textbutton "2 drops"   action Function(check_ca_amount, "glue", 2)
+                textbutton "5 drops"  action Function(check_ca_amount, "glue", 5)
+                textbutton "10 drops" action Function(check_ca_amount, "glue", 10)
+
 screen spe_spo: # the solid phase extraction checklist
     if(step_num_SPE == 1 and spe_difficulty == 0):
         add "images/materials_lab/spe/spe_checklist/spe_checklist_full1.png":
