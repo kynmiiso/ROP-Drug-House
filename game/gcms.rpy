@@ -52,23 +52,42 @@ label gcms:
         hide nina talk
         jump materials_lab
 
-    scene gcms_background
-    show screen gcms_screen
-    show screen gcms_checklist
-    n normal1 "Welcome to the GC-MS analysis."
-
-    $ gcms_current_drug = get_next_gcms_drug()
-    if gcms_current_drug is None:
+    if get_next_gcms_drug() is None:
         show nina talk
         n "All samples have been run through the GC-MS. Great work."
         hide nina talk
         jump materials_lab
 
-    $ gcms_step = 3
-    show screen gcms_screen
-    show screen gcms_checklist
-    show screen inventory
+    scene gcms_background
+    show nina talk
+    n "Which prepared sample would you like to analyze?"
+    hide nina talk
+
+    menu:
+        "Cocaine Sample" if has_SPE_cocaine and not gcms_queue_done["cocaine"]:
+            $ gcms_current_drug = "cocaine"
+        "MDMA Sample" if has_SPE_mdma and not gcms_queue_done["mdma"]:
+            $ gcms_current_drug = "mdma"
+        "Methamphetamine Sample" if has_SPE_meth and not gcms_queue_done["meth"]:
+            $ gcms_current_drug = "meth"
+
+    $ gcms_step = 2
+    show nina normal1
+    n "Head over to the autosampler and insert the sample vial to begin."
+    hide nina normal1
+
+    show screen gcms_open_autosampler zorder 0
+    show screen gcms_checklist zorder 10
+    show screen inventory zorder 20
     show screen back_button_screen('materials_lab') onlayer over_screens
+    jump gcms_idle
+
+label gcms_load_autosampler:
+    hide screen gcms_open_autosampler
+    $ gcms_step = 3
+    show screen gcms_screen zorder 0
+    show screen gcms_checklist zorder 10
+    show screen inventory zorder 20
     jump gcms_idle
 
 label gcms_idle:
@@ -83,10 +102,6 @@ label gcms_set_time:
             "Wrong."
             jump gcms_set_time
         "6 minutes":
-            jump gcms_run
-        "8 minutes":
-            jump gcms_run
-        "10 minutes":
             jump gcms_run
         "12 minutes":
             "Wrong."
@@ -105,8 +120,8 @@ label gcms_run:
     "The mass spectrum for the sample has been generated."
 
     $ gcms_step = 8
-    show screen gcms_screen
-    show screen gcms_checklist
+    show screen gcms_screen zorder 0
+    show screen gcms_checklist zorder 10
     jump gcms_idle
 
 label gcms_compare_interface:
@@ -130,6 +145,24 @@ label gcms_identify:
         $ gcms_step = 9
         "The RRT and mass spectrum match the reference standard for [chosen]."
         "You've identified the sample as [chosen]."
+
+        $ presumptive_result = evidence_found.get(gcms_current_drug + "_presumptive", False)
+        show nina thinknote1
+        n "Does this result match your presumptive field tests from evidence collection?"
+        menu:
+            "Yes, it matches":
+                if presumptive_result:
+                    n "Correct! The presumptive test was consistent with this result."
+                else:
+                    n "Incorrect. The presumptive test result does not match this GC-MS identification."
+                    jump gcms_identify
+            "No, it doesn't match":
+                if not presumptive_result:
+                    n "Correct! The presumptive test was inconsistent with this result."
+                else:
+                    n "Incorrect. The presumptive test result matches this GC-MS identification."
+                    jump gcms_identify
+        hide nina thinknote1
         $ gcms_queue_done[gcms_current_drug] = True
         $ evidence.add_to_inventory(evids["Identified " + gcms_current_drug.capitalize() + " Sample"])
         $ gcms_current_drug = None

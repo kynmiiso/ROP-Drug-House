@@ -546,26 +546,38 @@ screen gcms_screen():
             action Jump("gcms_compare_interface")
 
 screen gcms_compare_screen():
-    $ ref_charts = ["cocaine_gcms_charts", "mdma_gcms_charts", "meth_gcms_charts"]
-    $ ref_names  = ["Cocaine", "MDMA", "Methamphetamine"]
-    $ evidence_chart = "evidence_sample_%s_gcms_charts" % gcms_current_drug
+    $ ref_charts  = {"cocaine": "cocaine_gcms_charts", "mdma": "mdma_gcms_charts", "meth": "meth_gcms_charts"}
+    $ ref_keys    = ["cocaine", "mdma", "meth"]
+    $ evidence_chart  = "evidence_sample_%s_gcms_charts" % gcms_current_drug
+    $ reference_chart = ref_charts[ref_keys[gcms_ref_index]]
 
     add "gcms_interface"
-    add evidence_chart at Transform(xpos=0.17, ypos=0.25, zoom=0.83)
-    add ref_charts[gcms_ref_index] at Transform(xpos=0.5, ypos=0.25, zoom=0.83)
-    text ref_names[gcms_ref_index] xalign 0.65 ypos 0.63 size 34 color "#ffffff"
+    add evidence_chart  at Transform(xalign=0.5, ypos=0.25, zoom=0.83)
+    add reference_chart at Transform(xalign=0.5, ypos=0.45, zoom=0.83)
 
     imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.35, ypos=0.76)
+        auto "afis_button_%s" at Transform(xpos=0.30, ypos=0.85)
         action Jump("gcms_compare_prev")
-    text "Prev" xpos 0.385 ypos 0.785 size 40
+    text "Prev" xpos 0.34 ypos 0.88 size 50
 
     imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.52, ypos=0.76)
+        auto "afis_button_%s" at Transform(xpos=0.45, ypos=0.85)
         action Jump("gcms_compare_next")
-    text "Next" xpos 0.559 ypos 0.785 size 40
+    text "Next" xpos 0.49 ypos 0.88 size 50
 
     imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.69, ypos=0.76)
+        auto "afis_button_%s" at Transform(xpos=0.60, ypos=0.85)
         action Jump("gcms_identify")
-    text "Identify" xpos 0.7 ypos 0.785 size 40
+    text "Identify" xpos 0.62 ypos 0.88 size 50
+
+screen gcms_open_autosampler():
+    add "gcms_background" at Transform(xalign=0.5, yalign=0.5)
+    textbutton "Go to GC Autosampler":
+            xalign 0.5 ypos 0.85
+            xsize 480 ysize 90
+            text_size 42
+            text_color "#ffffff"
+            text_align 0.5
+            background "#012a4a"
+            hover_background "#0466c8"
+            action Jump("gcms_load_autosampler")
