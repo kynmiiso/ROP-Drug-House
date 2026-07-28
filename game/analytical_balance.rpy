@@ -5,6 +5,8 @@ default drug_weights = {"cocaine": None, "mdma": None, "meth": None}
 default balance_state = "zero"   # zero / cocaine / mdma / meth
 default analytical_balance_done = False
 default lab_notebook_given = False
+default ab_pending_messages = []   # queue of messages, oldest first
+default ab_wait_msg = None
 
 init python:
     _CORRECT_WEIGHTS = {"cocaine": 2.6703, "mdma": 1.8415, "meth": 3.1296}
@@ -18,12 +20,17 @@ init python:
             weighed_mdma = True
         elif drug == "meth":
             weighed_meth = True
-        renpy.notify(f"Recorded weight for presumed {drug} sample in lab notebook: {_CORRECT_WEIGHTS[drug]} g")
+
+        store.ab_pending_messages.append(
+            f"Recorded weight for presumed {drug} sample in lab notebook: {_CORRECT_WEIGHTS[drug]} g"
+        )
 
         if weighed_cocaine and weighed_mdma and weighed_meth:
             analytical_balance_done = True
             gcms_step = 2
-            renpy.notify("All samples have been weighed and recorded. Solid Phase Extraction is now available.")
+            store.ab_pending_messages.append(
+                "All samples have been weighed and recorded. Solid Phase Extraction is now available."
+            )
 
     def analytical_balance_drop(drags, drop):
         if not drop:
@@ -43,7 +50,7 @@ init python:
             store.balance_state = "meth"
             weigh_sample("meth")
         else:
-            renpy.notify("Remove the current sample before weighing another.")
+            store.ab_pending_messages.append("Remove the current sample before weighing another.")
             store.selected_tool = None
             renpy.restart_interaction()
             return False
@@ -70,5 +77,9 @@ label analytical_balance:
     jump analytical_balance_idle
 
 label analytical_balance_idle:
-    $ renpy.pause(3600, hard=True)
+    if ab_pending_messages:
+        $ ab_wait_msg = ab_pending_messages.pop(0)
+        n normal1 "[ab_wait_msg]"
+        jump analytical_balance_idle
+    $ renpy.pause(0.2)
     jump analytical_balance_idle

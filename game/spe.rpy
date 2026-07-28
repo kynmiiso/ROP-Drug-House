@@ -83,10 +83,10 @@ label SPE_condition:
 
 label SPE_condition1:
     scene spe12
-    $ step_num_SPE = 2 # catridge has been reinsed with methanol waiting for 2
     "Vacuum update to what flow rate?"
     menu:
         "5 mL/minute":
+            $ step_num_SPE = 2
             jump SPE_condition2
         "1 mL/minute":
             "Wrong."
@@ -100,10 +100,10 @@ label SPE_condition2:
 
 label SPE_condition3:
     scene spe14
-    $ step_num_SPE = 3 # catridge has been reinsed with formic or water waiting for loading
     "Vacuum update to what flow rate?"
     menu:
         "5 mL/minute":
+            $ step_num_SPE = 3 # catridge has been reinsed with formic or water waiting for loading
             jump SPE_loading
         "1 mL/minute":
             "Wrong. Try again."
@@ -119,13 +119,13 @@ label SPE_loading:
 
 label SPE_loading1:
     scene spe22
-    $ step_num_SPE = 4 # drugs in, next wash w/formic
     "Vacuum update to what flow rate?"
     menu:
         "5 mL/minute":
             "Wrong. Try again."
             jump SPE_loading1
         "1 mL/minute":
+            $ step_num_SPE = 4 # drugs in, next wash w/formic
             jump SPE_washing
 
 label SPE_washing:
@@ -138,13 +138,13 @@ label SPE_washing:
 
 label SPE_washing1:
     scene spe32
-    $ step_num_SPE = 5 # washg fromic, next wash w/methanol
     "Vacuum update to what flow rate?"
     menu:
         "5 mL/minute":
             "Wrong. Try again."
             jump SPE_washing1
         "1 mL/minute":
+            $ step_num_SPE = 5 # washg fromic, next wash w/methanol
             jump SPE_washing2
 
 label SPE_washing2:
@@ -155,13 +155,13 @@ label SPE_washing2:
 
 label SPE_washing3:
     scene spe34
-    $ step_num_SPE = 6 # 5% ammonium hydroxide ELUTION
     "Vacuum update to what flow rate?"
     menu:
         "5 mL/minute":
             "Wrong."
             jump SPE_washing3
         "1 mL/minute":
+            $ step_num_SPE = 6 # 5% ammonium hydroxide ELUTION
             jump SPE_elution
 
 label SPE_elution:
@@ -173,7 +173,6 @@ label SPE_elution:
     call screen inventory
 
 label SPE_elution1:
-    $ step_num_SPE = 7
     scene spe42
     "Vacuum update to what flow rate?"
     menu:
@@ -181,6 +180,7 @@ label SPE_elution1:
             "Wrong."
             jump SPE_elution1
         "1 mL/minute":
+            $ step_num_SPE = 7
             jump SPE_elution2
 
 label SPE_elution2:
@@ -200,11 +200,18 @@ label SPE_elution2:
                 $ gcms_step = 3
                 $ choice_SPE = "COMPLETED"
             # reset counter
-            hide screen spe_spo
+
             $ step_num_SPE = 1
             $ current_SPE_drug = ""
-            show screen back_button_screen('materials_lab') onlayer over_screens
-            jump materials_lab
+            hide screen spe_spo
+
+            if has_SPE_cocaine and has_SPE_mdma and has_SPE_meth:
+                $ gcms_step = 3
+                $ choice_SPE = "COMPLETED"
+                show screen back_button_screen('materials_lab') onlayer over_screens
+                jump materials_lab
+            else: 
+                jump solid_phase_extraction
 
 # toolbox stuffs for SPE
 label use5Amm:

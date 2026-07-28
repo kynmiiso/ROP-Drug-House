@@ -31,9 +31,9 @@ init python:
 
         if dragged_image == expected:
             store.gcms_step = 4
-            renpy.notify("Sample loaded into the GC autosampler.")
+            renpy.say(None, "Sample loaded into the GC autosampler.")
         else:
-            renpy.notify("That's not the right prepared sample.")
+            renpy.say(None, "That's not the right prepared sample.")
             store.selected_tool = None
             renpy.restart_interaction()
             return False
@@ -150,13 +150,13 @@ label gcms_identify:
         show nina thinknote1
         n "Does this result match your presumptive field tests from evidence collection?"
         menu:
-            "Yes, it matches":
+            "Yes, it is consistent":
                 if presumptive_result:
                     n "Correct! The presumptive test was consistent with this result."
                 else:
                     n "Incorrect. The presumptive test result does not match this GC-MS identification."
                     jump gcms_identify
-            "No, it doesn't match":
+            "No, it isn't consistent":
                 if not presumptive_result:
                     n "Correct! The presumptive test was inconsistent with this result."
                 else:
@@ -168,5 +168,5 @@ label gcms_identify:
         $ gcms_current_drug = None
         jump gcms
     else:
-        "That doesn't match. Review the chromatogram and mass spectrum again."
+        "That is not the correct reference standard. Review the chromatogram and mass spectrum again."
         call screen gcms_compare_screen

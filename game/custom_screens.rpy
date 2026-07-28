@@ -306,7 +306,7 @@ screen ca_chamber_screen():
         else "ca_chamber_firearm" if ca_chamber_firearm_placed
         else "ca_chamber_empty"
     )
-    add bg_image at Transform(xalign=0.5, yalign=0.5, rotate=90)
+    add bg_image at Transform(xalign=0.5, yalign=0.5, rotate=90, zoom=1.4)
 
     if not ca_chamber_done:
         if ca_chamber_state == "empty":

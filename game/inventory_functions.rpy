@@ -204,16 +204,16 @@ init -5 python:
         global imported_print
         if location == "afis":
             if not ca_chamber_done:
-                renpy.notify("Process the firearm in the CA chamber before importing a print.")
+                say("Process the firearm in the CA chamber before importing a print.")
                 return
             imported_print = "firearm_fingerprint"
             renpy.jump("import_print")
         else:
-            renpy.notify("Bring this to AFIS to import it.")
+            say("Bring this to AFIS to import it.")
 
     def use_distilled_water():
         if location != "ca_chamber" and location != "solid_phase_extraction":
-            renpy.notify("Bring this to the CA chamber or Solid Phase Extraction to use it.")
+            say("Bring this to the CA chamber or Solid Phase Extraction to use it.")
             return
         if location == "solid_phase_extraction":
             renpy.jump("useWater")
@@ -222,17 +222,17 @@ init -5 python:
 
     def use_superglue():
         if location != "ca_chamber":
-            renpy.notify("Bring this to the CA chamber to use it.")
+            say("Bring this to the CA chamber to use it.")
             return
         store.selected_tool = "toolbox-superglue"
         renpy.restart_interaction()
 
     def use_firearm():
         if location != "ca_chamber":
-            renpy.notify("Bring this to the CA chamber to use it.")
+            say("Bring this to the CA chamber to use it.")
             return
         if ca_chamber_state != "empty":
-            renpy.notify("The CA chamber isn't ready for the firearm right now.")
+            say("The CA chamber isn't ready for the firearm right now.")
             return
         store.selected_tool = "inventory-firearm"
         renpy.restart_interaction()
@@ -255,7 +255,7 @@ init -5 python:
         elif location == "solid_phase_extraction":
             renpy.jump("useCocaine")
         else:
-            renpy.notify("Bring this to the balance or SPE to use it.")
+            say("Bring this to the balance or SPE to use it.")
 
     def use_mdma_sample():
         if location == "analytical_balance":
@@ -263,7 +263,7 @@ init -5 python:
         elif location == "solid_phase_extraction":
             renpy.jump("useMDMA")
         else:
-            renpy.notify("Bring this to the balance or SPE to use it.")
+            say("Bring this to the balance or SPE to use it.")
 
     def use_meth_sample():
         if location == "analytical_balance":
@@ -271,11 +271,11 @@ init -5 python:
         elif location == "solid_phase_extraction":
             renpy.jump("useMeth")
         else:
-            renpy.notify("Bring this to the balance or SPE to use it.")
+            say("Bring this to the balance or SPE to use it.")
 
     def analytical_balance_use_sample(drug):
         if store.balance_state != "zero":
-            renpy.notify("Remove the current sample before weighing another.")
+            say("Remove the current sample before weighing another.")
             return
         store.balance_state = drug
         weigh_sample(drug)
@@ -292,17 +292,21 @@ init -5 python:
 
     def gcms_use_prepared_sample(drug):
         if location != "gcms":
-            renpy.notify("Bring this to the GC-MS to analyze it.")
+            say("Bring this to the GC-MS to analyze it.")
             return
         if gcms_step != 3:
-            renpy.notify("The GC-MS isn't ready for a sample right now.")
+            say("The GC-MS isn't ready for a sample right now.")
             return
         if drug != gcms_current_drug:
-            renpy.notify("That's not the sample queued for analysis.")
+            say("That's not the sample queued for analysis.")
             return
         store.gcms_step = 4
-        renpy.notify("Sample loaded into the GC autosampler.")
+        say("Sample loaded into the GC autosampler.")
         renpy.restart_interaction()
     
+    def say(what, who=None):
+        renpy.invoke_in_new_context(renpy.say, who, what)
+
     def view_lab_notebook():
         renpy.show_screen("lab_notebook")
+
