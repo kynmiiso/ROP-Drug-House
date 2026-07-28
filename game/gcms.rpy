@@ -4,6 +4,9 @@ default gcms_current_drug = None
 default gcms_ref_index = 0
 
 init python:
+    def say(what, who=None):
+        renpy.invoke_in_new_context(renpy.say, who, what)
+
     def get_next_gcms_drug():
         """Return the next prepared sample still awaiting GC-MS analysis, or None."""
         prepared = {
@@ -31,9 +34,9 @@ init python:
 
         if dragged_image == expected:
             store.gcms_step = 4
-            renpy.say(None, "Sample loaded into the GC autosampler.")
+            say("Sample loaded into the GC autosampler.")
         else:
-            renpy.say(None, "That's not the right prepared sample.")
+            say("That's not the right prepared sample.")
             store.selected_tool = None
             renpy.restart_interaction()
             return False
@@ -91,7 +94,7 @@ label gcms_load_autosampler:
     jump gcms_idle
 
 label gcms_idle:
-    $ renpy.pause(3600, hard=True)
+    $ renpy.pause(3600)
     jump gcms_idle
 
 label gcms_set_time:

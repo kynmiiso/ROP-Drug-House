@@ -238,17 +238,29 @@ init -5 python:
         renpy.restart_interaction()
 
     def use_methanol():
+        if location != "solid_phase_extraction":
+            say("Bring this to Solid Phase Extraction to use it.")
+            return
         renpy.jump("useMethanol")
 
     def use_step3():
+        if location != "solid_phase_extraction":
+            say("Bring this to Solid Phase Extraction to use it.")
+            return
         renpy.jump("useStep3")
 
     def use_01formic():
+        if location != "solid_phase_extraction":
+            say("Bring this to Solid Phase Extraction to use it.")
+            return
         renpy.jump("use01Formic")
 
     def use_5amm():
+        if location != "solid_phase_extraction":
+            say("Bring this to Solid Phase Extraction to use it.")
+            return
         renpy.jump("use5Amm")
-        
+
     def use_cocaine_sample():
         if location == "analytical_balance":
             analytical_balance_use_sample("cocaine")
