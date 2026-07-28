@@ -119,6 +119,13 @@ label gcms_run:
     "Generating the mass spectrum for the sample..."
     "The mass spectrum for the sample has been generated."
 
+    show nina normal1
+    n "A lab certified cocaine reference standard has already been analyzed under the same GC-MS laboratory conditions used for the evidence samples."
+    hide nina normal1
+    show nina thinknote1
+    n "Use the reference chromatogram and mass spectrum to identify the cocaine peak in the evidence samples and determine whether the unknown samples are consistent with cocaine."
+    hide nina thinknote1
+
     $ gcms_step = 8
     show screen gcms_screen zorder 0
     show screen gcms_checklist zorder 10
