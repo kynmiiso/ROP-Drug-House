@@ -1,11 +1,11 @@
 ﻿image house exterior = "images/Scenes/forensics_house_exterior_placeholder.jpg"
 image house interior = "images/Scenes/forensics_house_interior_placeholder.jpg"
-image house interior zoom mdma = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
-image house interior zoom meth = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
-image house interior zoom cocaine = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
+image house interior zoom sample1 = "images/Scenes/forensics_house_interior_placeholder_zoom_1.jpg"
+image house interior zoom sample2 = "images/Scenes/forensics_house_interior_placeholder_zoom_2.jpg"
+image house interior zoom sample3 = "images/Scenes/forensics_house_interior_placeholder_zoom_3.jpg"
 image house interior zoom firearm = "images/Scenes/forensics_house_interior_placeholder_zoom_4.jpg"
+image house interior zoom cash = "images/Scenes/forensics_house_interior_placeholder_zoom_5.jpg"
 image firearm_fumed = "images/firearm_fumed.jpg"
-
 image lab_hallway_idle = "images/Scenes/lab_hallway_idle.png"
 
 init python:
@@ -54,11 +54,12 @@ init python:
 
     evids = load_items("jsons/evidence.json")
     evids_by_key = {
-        "cocaine":            evids.get("Cocaine Sample"),
-        "mdma":                evids.get("MDMA Sample"),
-        "meth":                evids.get("Meth Sample"),
-        "firearm":             evids.get("Firearm"),
-        "firearm_fingerprint": evids.get("Firearm Fingerprint Photo"),
+        "sample1":              evids.get("Sample 1"),
+        "sample2":              evids.get("Sample 2"),
+        "sample3":              evids.get("Sample 3"),
+        "firearm":              evids.get("Firearm"),
+        "firearm_fingerprint":  evids.get("Firearm Fingerprint Photo"),
+        "cash":                 evids.get("Cash"),
     }
 
     tools = load_items("jsons/toolbox.json")
@@ -92,6 +93,17 @@ init python:
     def analyzed_everything() -> None:
         return prints["print_4"].processed
 
+    def all_evidence_collected() -> bool:
+        """True once every scene-collected item (sample1-3, firearm, cash) is bagged.
+        Screens that show a 'Finish Investigation' / advance button should gate on this."""
+        return all([
+            evidence_found.get("sample1_packaged", False),
+            evidence_found.get("sample2_packaged", False),
+            evidence_found.get("sample3_packaged", False),
+            evidence_found.get("firearm_packaged", False),
+            evidence_found.get("cash_packaged", False),
+        ])
+
     def set_timer(item: str):
         item = False
 
@@ -123,7 +135,6 @@ init python:
             self.afis_details = afis_details
             self.processed = False
 
-    # declare each piece of evidence
     firearm_fingerprint = Evidence(name = 'firearm_fingerprint',
                                 afis_details = {
                                     'image': 'firearm_fingerprint',
@@ -136,93 +147,98 @@ init python:
     # set current_evidence to track which evidence is currently active
     current_evidence = firearm_fingerprint
 
+# markers for evidence 
 default evidence_found = {
         "firearm_processed":            False,
         "firearm_packaged":             False,
-        "mdma_presumptive":             False,
-        "mdma_packaged":                False,
-        "mdma_processed":               False,
-        "meth_presumptive":             False,
-        "meth_packaged":                False,
-        "meth_processed":               False,
-        "cocaine_presumptive":          False,
-        "cocaine_packaged":             False,
-        "cocaine_processed":            False
+        "sample1_presumptive":          False,
+        "sample1_packaged":             False,
+        "sample1_processed":            False,
+        "sample2_presumptive":          False,
+        "sample2_packaged":             False,
+        "sample2_processed":            False,
+        "sample3_presumptive":          False,
+        "sample3_packaged":             False,
+        "sample3_processed":            False,
+        "cash_packaged":                False,
+        "cash_processed":               False
     }
 
+# steps for evidence collection drag and drop sequencing
 default valid_evidence_steps = {
-        "cocaine": [
+        "sample1": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"cocaine_idle":            "tube_idle"},
-            {"cocaine_tube":            "scott_reagent_idle"},
+            {"sample1_idle":            "tube_idle"},
+            {"sample1_tube":            "scott_reagent_idle"},
             "quiz",
-            {"cocaine_idle":            "evidence_bag_idle"},
+            {"sample1_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
-        "mdma": [
+        "sample2": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"mdma_idle":               "tube_idle"},
-            {"mdma_tube":               "marquis_reagent_idle"},
+            {"sample2_idle":            "tube_idle"},
+            {"sample2_tube":            "marquis_reagent_idle"},
             "quiz",
-            {"mdma_idle":               "tube_idle"},
-            {"mdma_tube":               "evidence_bag_idle"},
+            {"sample2_idle":            "tube_idle"},
+            {"sample2_tube":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
-        "meth": [
+        "sample3": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"meth_idle":               "tube_idle"},
-            {"meth_tube":               "marquis_reagent_idle"},
+            {"sample3_idle":            "tube_idle"},
+            {"sample3_tube":            "marquis_reagent_idle"},
             "quiz",
-            {"meth_idle":               "tube_idle"},
-            {"meth_tube":               "evidence_bag_idle"},
+            {"sample3_idle":            "tube_idle"},
+            {"sample3_tube":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "firearm": [
             {"drop_target_idle":                    "marker_dynamic"},
-            # {"firearm_idle":                        "uv_light_idle"},
-            # {"firearm_light_idle":                  "magnetic_powder_idle"},
-            # {"firearm_fingerprint_idle":            "scalebar_idle"},
-            # {"fingerprint_scalebar_idle":           "tape_idle"},
-            # {"lifted_fingerprint_idle":             "backing_card_idle"},
-            # {"fingerprint_backing_idle":            "pen_idle"},
-            # {"fingerprint_backing_initial_idle":    "evidence_bag_idle"},
-            # {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
-            # "fingerprint_collect",
             {"firearm_idle":                        "evidence_bag_idle"},
             {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
+            "collect_step"
+        ],
+        "cash": [
+            {"drop_target_idle":        "marker_dynamic"},
+            {"cash_idle":               "evidence_bag_idle"},
+            {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ]
     }
 
 default evidence_positions = {
-        "cocaine": (0.15, 0.70),
-        "mdma":    (0.50, 0.65),
-        "meth":    (0.30, 0.80),
+        "sample1": (0.15, 0.70),
+        "sample2": (0.50, 0.65),
+        "sample3": (0.30, 0.80),
         "firearm": (0.40, 0.30),
+        "cash":    (0.65, 0.50),
     }
 
 default marker_drop_positions = {
-        "cocaine": (0.35, 0.62),
-        "mdma":    (0.40, 0.57),
-        "meth":    (0.22, 0.72),
+        "sample1": (0.35, 0.62),
+        "sample2": (0.40, 0.57),
+        "sample3": (0.22, 0.72),
         "firearm": (0.32, 0.22),
+        "cash":    (0.58, 0.45),
     }
 
 default evidence_step_index = {
-        "cocaine": 0,
-        "mdma":    0,
-        "meth":    0,
+        "sample1": 0,
+        "sample2": 0,
+        "sample3": 0,
         "firearm": 0,
+        "cash":    0,
     }
 
 default evidence_marker_placed = {
-        "cocaine": False,
-        "mdma":    False,
-        "meth":    False,
+        "sample1": False,
+        "sample2": False,
+        "sample3": False,
         "firearm": False,
+        "cash":    False,
     }
 
 default evidence_visited_order = []
@@ -231,9 +247,9 @@ default selected_tool       = None
 default quiz_pending        = False
 default collect_step_flag   = False
 
-default cocaine_id_confirmed = False
-default mdma_id_confirmed    = False
-default meth_id_confirmed    = False
+default sample1_id_confirmed = False
+default sample2_id_confirmed = False
+default sample3_id_confirmed = False
 
 default collected_evidence_inventory = []
 default evidence_inventory = {}
@@ -325,7 +341,7 @@ init python:
 
 init python:
     _QUIZ = {
-        "cocaine": {
+        "sample1": {
             "chart":   "scott_chart",
             "correct": "Cocaine",
             "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
@@ -334,22 +350,22 @@ init python:
                 "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
             }
         },
-        "mdma": {
-            "chart":   "marquis_chart",
-            "correct": "MDMA",
-            "correct_msg": "Correct! The purple colour indicates MDMA.",
+        "sample2": {
+            "chart":   "scott_chart",
+            "correct": "Cocaine",
+            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
             "wrong": {
-                "Methamphetamine":"Incorrect. Look at the colour chart again.",
-                "Cocaine":        "Incorrect. The Scott test is used for cocaine.",
+                "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
+                "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
             }
         },
-        "meth": {
-            "chart":   "marquis_chart",
-            "correct": "Methamphetamine",
-            "correct_msg": "Correct! The orange-brown colour indicates methamphetamine.",
+        "sample3": {
+            "chart":   "scott_chart",
+            "correct": "Cocaine",
+            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
             "wrong": {
-                "MDMA":   "Incorrect. Look at the colour chart again.",
-                "Cocaine":"Incorrect. The Scott test is used for cocaine.",
+                "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
+                "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
             }
         },
     }
@@ -361,14 +377,16 @@ label inspect_evidence:
     if testing_item not in evidence_visited_order:
         $ evidence_visited_order.append(testing_item)
 
-    if "mdma" in testing_item:
-        scene house interior zoom mdma
-    elif "meth" in testing_item:
-        scene house interior zoom meth
-    elif "cocaine" in testing_item:
-        scene house interior zoom cocaine
-    elif "firearm" in testing_item:
+    if testing_item == "sample1":
+        scene house interior zoom sample1
+    elif testing_item == "sample2":
+        scene house interior zoom sample2
+    elif testing_item == "sample3":
+        scene house interior zoom sample3
+    elif testing_item == "firearm":
         scene house interior zoom firearm
+    elif testing_item == "cash":
+        scene house interior zoom cash
 
     $ _marker_num = evidence_visited_order.index(testing_item) + 1
     $ _marker_img = "marker_" + str(_marker_num)
@@ -520,8 +538,8 @@ label skip_to_lab:
     python:
         for key in evidence_found:
             evidence_found[key] = True
-        collected_evidence_inventory = ["cocaine", "mdma", "meth", "firearm"]
-        for key in ["cocaine", "mdma", "meth", "firearm"]:
+        collected_evidence_inventory = ["sample1", "sample2", "sample3", "firearm", "cash"]
+        for key in ["sample1", "sample2", "sample3", "firearm", "cash"]:
             evidence.add_to_inventory(evids_by_key[key])
     jump lab_hallway_intro
 
@@ -543,6 +561,9 @@ label scene_room:
     jump scene_room_loop
 
 label investigation_complete:
+    # NOTE: this label should only be reached once all_evidence_collected() is True
+    # (sample1, sample2, sample3, firearm, and cash all packaged). Gate whatever
+    # button/screen jumps here on that helper rather than jumping unconditionally.
     scene house interior
     hide screen investigation_buttons
     hide screen inventory
