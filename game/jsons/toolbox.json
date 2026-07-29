@@ -18,6 +18,12 @@
         "action": "use_scott_reagent"
     },
     {
+        "name": "Spatula",
+        "image_name": "toolbox-spatula", 
+        "usable": true, 
+        "action": "use_spatula"
+    },
+    {
         "name": "Tube",
         "image_name": "toolbox-tube", 
         "usable": true, 

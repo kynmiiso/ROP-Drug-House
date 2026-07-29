@@ -11,6 +11,7 @@ init -5 python:
         "marker_4": "marker_4",
         "marquis_reagent_idle":      "marquis_reagent_idle",
         "scott_reagent_idle":        "scott_reagent_idle",
+        "spatula_idle":              "spatula_idle",
         "tube_idle":                 "tube_idle",
         "evidence_bag_idle":         "evidence_bag_idle",
         "tamper_evident_tape_idle":  "tamper_evident_tape_idle",
@@ -26,6 +27,7 @@ init -5 python:
         "Evidence Markers":     "marker_dynamic",
         "Marquis Reagent":      "marquis_reagent_idle",
         "Scott Reagent":        "scott_reagent_idle",
+        "Spatula":              "spatula_idle",
         "Tube":                 "tube_idle",
         "Evidence Bag":         "evidence_bag_idle",
         "Tamper Evident Tape":  "tamper_evident_tape_idle",
@@ -193,6 +195,7 @@ init -5 python:
     def use_tube():                 _use_tool("Tube")
     def use_evidence_bag():         _use_tool("Evidence Bag")
     def use_tamper_evident_tape():  _use_tool("Tamper Evident Tape")
+    def use_spatula():              _use_tool("Spatula")
     def use_backing_card():         _use_tool("Backing Card")
     def use_tape():                 _use_tool("Tape")
     def use_uv_light():             _use_tool("UV Light")

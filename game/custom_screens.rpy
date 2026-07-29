@@ -75,9 +75,9 @@ screen investigation_buttons():
     $ firearm_num       = (_order.index("firearm")  + 1) if "firearm"   in _order else None
     $ cash_num          = (_order.index("cash")     + 1) if "cash"      in _order else None
 
-    if not evidence_found["cocaine_processed"] and not evidence_found["cocaine_packaged"]:
+    if not evidence_found["sample1_processed"] and not evidence_found["sample1_packaged"]:
         imagebutton:
-            xpos 0.43 ypos 0.32
+            xpos 0.43 ypos 0.67
             idle  ("sample1_idle" if not evidence_found["sample1_presumptive"] else "cocaine_blue")
             hover ("sample1_hover" if not evidence_found["sample1_presumptive"] else "cocaine_blue")
             mouse "hover"
@@ -89,14 +89,14 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
         if sample1_num is not None:
-            add ("marker_" + str(sample1_num)) at Transform(xpos=0.43, ypos=0.32)
+            add ("marker_" + str(sample1_num)) at Transform(xpos=0.43, ypos=0.67)
     elif evidence_found["sample1_packaged"]:
-        if cocaine_num is not None:
-            add ("marker_" + str(sample1_num)) at Transform(xpos=0.43, ypos=0.32)
+        if sample1_num is not None:
+            add ("marker_" + str(sample1_num)) at Transform(xpos=0.43, ypos=0.67)
     
     if not evidence_found["sample2_processed"] and not evidence_found["sample2_packaged"]:
         imagebutton:
-            xpos 0.46 ypos 0.75
+            xpos 0.32 ypos 0.54
             idle  ("sample2_idle" if not evidence_found["sample2_presumptive"] else "cocaine_blue")
             hover ("sample2_hover" if not evidence_found["sample2_presumptive"] else "cocaine_blue")
             mouse "hover"
@@ -108,13 +108,13 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
         if sample2_num is not None:
-            add ("marker_" + str(sample2_num)) at Transform(xpos=0.8, ypos=0.75)
+            add ("marker_" + str(sample2_num)) at Transform(xpos=0.32, ypos=0.54)
     elif evidence_found["sample2_packaged"]:
-        add ("marker_" + str(sample2_num)) at Transform(xpos=0.8, ypos=0.75)
+        add ("marker_" + str(sample2_num)) at Transform(xpos=0.32, ypos=0.54)
 
     if not evidence_found["sample3_processed"] and not evidence_found["sample3_packaged"]:
         imagebutton:
-            xpos 0.46 ypos 0.75
+            xpos 0.66 ypos 0.52
             idle  ("sample3_idle" if not evidence_found["sample3_presumptive"] else "cocaine_blue")
             hover ("sample3_hover" if not evidence_found["sample3_presumptive"] else "cocaine_blue")
             mouse "hover"
@@ -126,13 +126,13 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
         if sample3_num is not None:
-            add ("marker_" + str(sample3_num)) at Transform(xpos=0.46, ypos=0.75)
+            add ("marker_" + str(sample3_num)) at Transform(xpos=0.66, ypos=0.52)
     elif evidence_found["sample3_packaged"]:
-        add ("marker_" + str(sample3_num)) at Transform(xpos=0.46, ypos=0.75)
+        add ("marker_" + str(sample3_num)) at Transform(xpos=0.66, ypos=0.52)
     
     if not evidence_found["firearm_processed"] and not evidence_found["firearm_packaged"]:
         imagebutton:
-            xpos 0.67 ypos 0.5
+            xpos 0.30 ypos 0.21
             idle  "firearm_idle"
             hover "firearm_hover"
             mouse "hover"
@@ -144,13 +144,13 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
         if firearm_num is not None:
-            add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
+            add ("marker_" + str(firearm_num)) at Transform(xpos=0.30, ypos=0.21)
     elif evidence_found["firearm_packaged"]:
-        add ("marker_" + str(firearm_num)) at Transform(xpos=0.67, ypos=0.5)
+        add ("marker_" + str(firearm_num)) at Transform(xpos=0.30, ypos=0.21)
 
     if not evidence_found["cash_processed"] and not evidence_found["cash_packaged"]:
         imagebutton:
-            xpos 0.6 ypos 0.2
+            xpos 0.16 ypos 0.57
             idle  "cash_idle"
             hover "cash_hover"
             mouse "hover"
@@ -162,9 +162,9 @@ screen investigation_buttons():
                 Jump("inspect_evidence"),
             ]
         if cash_num is not None:
-            add ("marker_" + str(cash_num)) at Transform(xpos=0.65, ypos=0.24)
+            add ("marker_" + str(cash_num)) at Transform(xpos=0.16, ypos=0.57)
     elif evidence_found["cash_packaged"]:
-        add ("marker_" + str(cash_num)) at Transform(xpos=0.65, ypos=0.24)
+        add ("marker_" + str(cash_num)) at Transform(xpos=0.16, ypos=0.57)
 
     if (evidence_found["sample1_packaged"]
         and evidence_found["sample2_packaged"]
@@ -174,8 +174,8 @@ screen investigation_buttons():
         textbutton "Finish Investigation":
             xpos 0.75 ypos 0.9
             style "hud_button"
-            background "#006"
-            hover_background "#00a"
+            background "#030364"
+            hover_background "#b5b5ff"
             action Jump("investigation_complete")
 
 screen colour_chart(chart_image):

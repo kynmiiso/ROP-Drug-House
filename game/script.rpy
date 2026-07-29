@@ -64,7 +64,7 @@ init python:
 
     tools = load_items("jsons/toolbox.json")
 
-    SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent",
+    SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent", "Spatula",
                         "Tube", "Evidence Bag", "Tamper Evident Tape"]
     LAB_TOOL_NAMES = ["Distilled Water", "Superglue", "100% Methanol", "1% Formic acid", "0.1% Formic acid", "Methanol and 5% Ammonium Hydroxide"]
 
@@ -168,7 +168,8 @@ default evidence_found = {
 default valid_evidence_steps = {
         "sample1": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"sample1_idle":            "tube_idle"},
+            {"sample1_idle":            "spatula_idle"},
+            {"spatula_powder":          "tube_idle"},
             {"sample1_tube":            "scott_reagent_idle"},
             "quiz",
             {"sample1_idle":            "evidence_bag_idle"},
@@ -177,28 +178,28 @@ default valid_evidence_steps = {
         ],
         "sample2": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"sample2_idle":            "tube_idle"},
-            {"sample2_tube":            "marquis_reagent_idle"},
+            {"sample2_idle":            "spatula_idle"},
+            {"spatula_powder":          "tube_idle"},
+            {"sample2_tube":            "scott_reagent_idle"},
             "quiz",
-            {"sample2_idle":            "tube_idle"},
-            {"sample2_tube":            "evidence_bag_idle"},
+            {"sample2_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "sample3": [
             {"drop_target_idle":        "marker_dynamic"},
-            {"sample3_idle":            "tube_idle"},
-            {"sample3_tube":            "marquis_reagent_idle"},
+            {"sample3_idle":            "spatula_idle"},
+            {"spatula_powder":          "tube_idle"},
+            {"sample3_tube":            "scott_reagent_idle"},
             "quiz",
-            {"sample3_idle":            "tube_idle"},
-            {"sample3_tube":            "evidence_bag_idle"},
+            {"sample3_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "firearm": [
-            {"drop_target_idle":                    "marker_dynamic"},
-            {"firearm_idle":                        "evidence_bag_idle"},
-            {"evidence_bag_idle":                   "tamper_evident_tape_idle"},
+            {"drop_target_idle":        "marker_dynamic"},
+            {"firearm_idle":            "evidence_bag_idle"},
+            {"evidence_bag_idle":       "tamper_evident_tape_idle"},
             "collect_step"
         ],
         "cash": [
@@ -210,7 +211,7 @@ default valid_evidence_steps = {
     }
 
 default evidence_positions = {
-        "sample1": (0.15, 0.70),
+        "sample1": (0.25, 0.70),
         "sample2": (0.50, 0.65),
         "sample3": (0.30, 0.80),
         "firearm": (0.40, 0.30),
