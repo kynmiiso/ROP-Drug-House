@@ -91,12 +91,25 @@ init python:
             default_mouse = cursor
             current_cursor = cursor
 
-    def analyzed_everything() -> None:
-        return prints["print_4"].processed
+    def analyzed_everything() -> bool:
+        """Returns true once every piece of relevant evidence has been analyzed in the lab."""
+        scene_done = all([
+            evidence_found.get("sample1_packaged", False),
+            evidence_found.get("sample2_packaged", False),
+            evidence_found.get("sample3_packaged", False),
+            evidence_found.get("firearm_packaged", False),
+            evidence_found.get("cash_packaged", False),
+        ])
+        afis_done = firearm_fingerprint.processed
+        gcms_done = all([
+            gcms_queue_done.get("sample1", False),
+            gcms_queue_done.get("sample2", False),
+            gcms_queue_done.get("sample3", False),
+        ])
+        return scene_done and afis_done and gcms_done
 
     def all_evidence_collected() -> bool:
-        """True once every scene-collected item (sample1-3, firearm, cash) is bagged.
-        Screens that show a 'Finish Investigation' / advance button should gate on this."""
+        """Returns true once every piece of evidence from the scene is processed and bagged."""
         return all([
             evidence_found.get("sample1_packaged", False),
             evidence_found.get("sample2_packaged", False),
@@ -666,7 +679,7 @@ label hallway:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
-            renpy.jump("end")
+            renpy.jump("lab_end")
     hide screen back_button_screen onlayer over_screens
     call screen lab_hallway_screen
 
@@ -676,7 +689,7 @@ label data_analysis_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
-            renpy.jump("end")
+            renpy.jump("lab_end")
     show screen back_button_screen('hallway') onlayer over_screens
     call screen data_analysis_lab_screen
 
@@ -693,16 +706,17 @@ label materials_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
-            renpy.jump("end")
+            renpy.jump("lab_end")
     hide screen back_button_screen onlayer over_screens
     show screen back_button_screen('hallway') onlayer over_screens
     call screen materials_lab_screen
 
-label end:
+label lab_end:
     hide screen back_button_screen onlayer over_screens
-    show nina normal1 
-    s "It looks like you've analyzed all the evidence. Great work!"
-    s "I hope you took note of the results. Tomorrow, you'll be testifying in court about your findings."
-    show nina normal3 
-    s "But for now, give yourself a pat on the back and go get some rest!"
+    show nina normal1
+    n "Congratulations, you have completed the lab analysis of all evidence."
+    show nina talk
+    n "Tomorrow you will be heading to the courtroom to defend the defendant, Methany Phentamy, against her drug trafficking charges."
+    show nina normal3
+    n "See you then!"
     return

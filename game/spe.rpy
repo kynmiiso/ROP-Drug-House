@@ -12,6 +12,40 @@ default step_num_SPE = 1 # see ipad notes for specifics, relates to which step t
 default inv_call_SPE = ""
 default choice_SPE = ""
 default current_SPE_drug = ""
+default spe_handoff_offered = False
+default spe_skipped_sample  = None   # "sample1" / "sample2" / "sample3" / None
+
+init python:
+    _SPE_PREPARED_ITEM = {
+        "sample1": "Prepared Sample 1",
+        "sample2": "Prepared Sample 2",
+        "sample3": "Prepared Sample 3",
+    }
+    _SPE_EVIDENCE_ITEM = {
+        "sample1": "Sample 1",
+        "sample2": "Sample 2",
+        "sample3": "Sample 3"
+    }
+
+    def spe_hand_off(drug):
+        store.spe_skipped_sample = drug
+        store.spe_handoff_offered = True
+
+    def spe_check_completion():
+        if store.spe_skipped_sample:
+            others = [d for d in ("sample1", "sample2", "sample3") if d != store.spe_skipped_sample]
+            if all(globals()["has_SPE_" + d] for d in others):
+                skipped = store.spe_skipped_sample
+                if not globals()["has_SPE_" + skipped]:
+                    globals()["has_SPE_" + skipped] = True
+                    evidence.delete_from_inventory(evids[_SPE_EVIDENCE_ITEM[skipped]])
+                    evidence.add_to_inventory(evids[_SPE_PREPARED_ITEM[skipped]])
+                    renpy.notify("The lab assistant finished preparing the handed-off sample.")
+                store.spe_skipped_sample = None
+
+        if has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3:
+            store.gcms_step = 3
+            store.choice_SPE = "COMPLETED"
 
 # LAB LABELS ----------
 label lab:
@@ -40,6 +74,26 @@ label solid_phase_extraction:
         hide nina normal1
         jump materials_lab
 
+    # hand off to assistant
+    if not spe_handoff_offered and current_SPE_drug == "" and step_num_SPE == 1:
+        show nina normal1
+        n "Solid Phase Extraction takes a while for each sample."
+        n "If you'd like, you can hand one off to the lab assistant to prepare while you run the other two yourself."
+        hide nina normal1
+        menu:
+            "Hand over Sample 1" if not has_SPE_sample1:
+                $ spe_hand_off("sample1")
+            "Hand over Sample 2" if not has_SPE_sample2:
+                $ spe_hand_off("sample2")
+            "Hand over Sample 3" if not has_SPE_sample3:
+                $ spe_hand_off("sample3")
+            "No, I'll do all three myself":
+                $ spe_handoff_offered = True
+        if spe_skipped_sample:
+            show nina normal1
+            n "I'll get that one started for you. Go ahead and prepare the other two."
+            hide nina normal1
+
     #PRE-TREATMENT
     hide screen back_button_screen onlayer over_screens
     show beaker_empty:
@@ -50,17 +104,17 @@ label solid_phase_extraction:
     n "Which drug sample do you want to dilute?"
     hide nina talk
     menu:
-        "Sample 1" if not has_SPE_sample1:
+        "Sample 1" if not has_SPE_sample1 and spe_skipped_sample != "sample1":
             $ current_SPE_drug = "sample1"
             show beaker_sample1:
                 xalign 0.5
                 yalign 0.5
-        "Sample 2" if not has_SPE_sample2:
+        "Sample 2" if not has_SPE_sample2 and spe_skipped_sample != "sample2":
             $ current_SPE_drug = "sample2"
             show beaker_sample2:
                 xalign 0.5
                 yalign 0.5
-        "Sample 3" if not has_SPE_sample3:
+        "Sample 3" if not has_SPE_sample3 and spe_skipped_sample != "sample3":
             $ current_SPE_drug = "sample3"
             show beaker_sample3:
                 xalign 0.5
@@ -196,21 +250,18 @@ label SPE_elution2:
                 $ evidence.add_to_inventory(evids["Prepared Sample 2"])
             elif(has_SPE_sample3 and current_SPE_drug == "sample3"):
                 $ evidence.add_to_inventory(evids["Prepared Sample 3"])
-            if(has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3):
-                $ gcms_step = 3
-                $ choice_SPE = "COMPLETED"
-            # reset counter
 
+            $ spe_check_completion()
+
+            # reset counter
             $ step_num_SPE = 1
             $ current_SPE_drug = ""
             hide screen spe_spo
 
-            if has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3:
-                $ gcms_step = 3
-                $ choice_SPE = "COMPLETED"
+            if choice_SPE == "COMPLETED":
                 show screen back_button_screen('materials_lab') onlayer over_screens
                 jump materials_lab
-            else: 
+            else:
                 jump solid_phase_extraction
 
 # toolbox stuffs for SPE
@@ -346,7 +397,7 @@ label useSample3:
     if location == "solid_phase_extraction":
         if(step_num_SPE == 3 and current_SPE_drug == "sample3"):
             $ has_SPE_sample3 = True
-            $ evidence.delete_from_inventory(evids["Sample3"])
+            $ evidence.delete_from_inventory(evids["Sample 3"])
             jump expression step_SPE
         else:
             "Wrong compound!"

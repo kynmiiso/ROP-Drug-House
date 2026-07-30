@@ -4,6 +4,8 @@ default gcms_current_drug = None
 default gcms_ref_index = 0
 
 init python:
+    _SAMPLE_DISPLAY_NAME = {"sample1": "Sample 1", "sample2": "Sample 2", "sample3": "Sample 3"}
+
     def say(what, who=None):
         renpy.invoke_in_new_context(renpy.say, who, what)
 
@@ -74,7 +76,7 @@ label gcms:
         "Sample 3" if has_SPE_sample3 and not gcms_queue_done["sample3"]:
             $ gcms_current_drug = "sample3"
 
-    $ gcms_step = 2
+    $ gcms_step = 3
     show nina normal1
     n "Head over to the autosampler and insert the sample vial to begin."
     hide nina normal1
@@ -87,7 +89,6 @@ label gcms:
 
 label gcms_load_autosampler:
     hide screen gcms_open_autosampler
-    $ gcms_step = 3
     show screen gcms_screen zorder 0
     show screen gcms_checklist zorder 10
     show screen inventory zorder 20
@@ -148,13 +149,14 @@ label gcms_compare_next:
     call screen gcms_compare_screen
 
 label gcms_identify:
-    $ ref_keys = ["sample1", "sample2", "sample3"]
+    $ ref_keys = ["cocaine", "mdma", "meth"]
     $ chosen = ref_keys[gcms_ref_index]
+    $ sample_label = _SAMPLE_DISPLAY_NAME[gcms_current_drug]
 
-    if chosen == gcms_current_drug:
+    if chosen == "cocaine":
         $ gcms_step = 9
-        "The RRT and mass spectrum match the reference standard for [chosen]."
-        "You've identified the sample as [chosen]."
+        "The RRT and mass spectrum for [sample_label] match the reference standard for cocaine."
+        "You've identified [sample_label] as cocaine."
 
         $ presumptive_result = evidence_found.get(gcms_current_drug + "_presumptive", False)
         show nina thinknote1
@@ -174,9 +176,9 @@ label gcms_identify:
                     jump gcms_identify
         hide nina thinknote1
         $ gcms_queue_done[gcms_current_drug] = True
-        $ evidence.add_to_inventory(evids["Identified " + gcms_current_drug.capitalize() + " Sample"])
+        $ evidence.add_to_inventory(evids["Identified Cocaine " + sample_label])
         $ gcms_current_drug = None
         jump gcms
     else:
-        "That is not the correct reference standard. Review the chromatogram and mass spectrum again."
+        "That is not the correct reference standard for [sample_label]. Review the chromatogram and mass spectrum again."
         call screen gcms_compare_screen

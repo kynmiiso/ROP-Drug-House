@@ -473,13 +473,14 @@ screen lab_notebook():
             for drug, weights in drug_weights.items():
                 $ net = weights["net"]
                 $ gross = weights["gross"]
-                text (f"Presumed Drug {drug.capitalize()}: " + (f"{net} g" if net is not None else "not yet weighed")) size 24 color "#474646"
-                text (f"Presumed Drug {drug.capitalize()} Bag: " + (f"{gross} g" if gross is not None else "not yet weighed")) size 24 color "#474646"
+                $ _label = _SAMPLE_DISPLAY_NAME[drug]
+                text (f"Presumed Drug {_label}: " + (f"{net} g" if net is not None else "not yet weighed")) size 24 color "#474646"
+                text (f"Presumed Drug {_label} Bag: " + (f"{gross} g" if gross is not None else "not yet weighed")) size 24 color "#474646"
 
         textbutton "✕":
             xalign 0.95 yalign 0.05
             action Hide("lab_notebook")
-
+            
 screen analytical_balance_screen():
     add "analytical_balance_zero" at Transform(xalign=0.5, yalign=0.5)
 
@@ -621,9 +622,9 @@ screen gcms_screen():
             action Jump("gcms_compare_interface")
 
 screen gcms_compare_screen():
-    $ ref_charts  = {"sample1": "sample1_gcms_charts", "sample2": "sample2_gcms_charts", "sample3": "sample3_gcms_charts"}
-    $ ref_keys    = ["sample1", "sample2", "sample3"]
-    $ evidence_chart  = "evidence_sample_%s_gcms_charts" % gcms_current_drug
+    $ ref_charts  = {"cocaine": "cocaine_gcms_charts", "mdma": "mdma_gcms_charts", "meth": "meth_gcms_charts"}
+    $ ref_keys    = ["cocaine", "mdma", "meth"]
+    $ evidence_chart  = "evidence_%s_gcms_charts" % gcms_current_drug
     $ reference_chart = ref_charts[ref_keys[gcms_ref_index]]
 
     add "gcms_interface"
