@@ -264,27 +264,27 @@ init -5 python:
             return
         renpy.jump("use5Amm")
 
-    def use_cocaine_sample():
+    def use_sample1():
         if location == "analytical_balance":
-            analytical_balance_use_sample("cocaine")
+            analytical_balance_use_sample("sample1")
         elif location == "solid_phase_extraction":
-            renpy.jump("useCocaine")
+            renpy.jump("useSample1")
         else:
             say("Bring this to the balance or SPE to use it.")
 
     def use_mdma_sample():
         if location == "analytical_balance":
-            analytical_balance_use_sample("mdma")
+            analytical_balance_use_sample("sample2")
         elif location == "solid_phase_extraction":
-            renpy.jump("useMDMA")
+            renpy.jump("useSample2")
         else:
             say("Bring this to the balance or SPE to use it.")
 
     def use_meth_sample():
         if location == "analytical_balance":
-            analytical_balance_use_sample("meth")
+            analytical_balance_use_sample("sample3")
         elif location == "solid_phase_extraction":
-            renpy.jump("useMeth")
+            renpy.jump("useSample3")
         else:
             say("Bring this to the balance or SPE to use it.")
 
@@ -296,14 +296,14 @@ init -5 python:
         weigh_sample(drug)
         renpy.restart_interaction()
 
-    def use_prepared_cocaine():
-        gcms_use_prepared_sample("cocaine")
+    def use_prepared_sample1():
+        gcms_use_prepared_sample("sample1")
 
-    def use_prepared_mdma():
-        gcms_use_prepared_sample("mdma")
+    def use_prepared_sample2():
+        gcms_use_prepared_sample("sample2")
 
-    def use_prepared_meth():
-        gcms_use_prepared_sample("meth")
+    def use_prepared_sample3():
+        gcms_use_prepared_sample("sample3")
 
     def gcms_use_prepared_sample(drug):
         if location != "gcms":

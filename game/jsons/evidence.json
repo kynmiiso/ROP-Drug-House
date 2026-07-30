@@ -41,45 +41,45 @@
         "usable": false
     },
     {
-        "key": "prepared_cocaine",
-        "name": "Prepared Cocaine Sample",
-        "image_name": "prepared_cocaine_sample",
-        "description": "Solid Phase Extraction-prepared liquid cocaine sample",
+        "key": "prepared_sample1",
+        "name": "Prepared Sample 1",
+        "image_name": "prepared_sample1",
+        "description": "Solid Phase Extraction-prepared liquid sample 1",
         "usable": true,
-        "action": "use_prepared_cocaine"
+        "action": "use_prepared_sample1"
     },
     {
-        "key": "prepared_mdma",
-        "name": "Prepared MDMA Sample",
-        "image_name": "prepared_mdma_sample",
-        "description": "Solid Phase Extraction-prepared liquid MDMA sample",
+        "key": "prepared_sample2",
+        "name": "Prepared Sample 2",
+        "image_name": "prepared_sample2",
+        "description": "Solid Phase Extraction-prepared liquid sample 2",
         "usable": true,
-        "action": "use_prepared_mdma"
+        "action": "use_prepared_sample2"
     },
     {
-        "key": "prepared_meth",
-        "name": "Prepared Meth Sample",
-        "image_name": "prepared_meth_sample",
-        "description": "Solid Phase Extraction-prepared liquid Methamphetamine sample",
+        "key": "prepared_sample3",
+        "name": "Prepared Sample 3",
+        "image_name": "prepared_sample3",
+        "description": "Solid Phase Extraction-prepared liquid sample 3",
         "usable": true,
-        "action": "use_prepared_meth"
+        "action": "use_prepared_sample3"
     },
     {
-        "key": "identified-cocaine",
-        "name": "Identified Cocaine Sample",
-        "image_name": "inventory-cocaine",
+        "key": "identified-sample1",
+        "name": "Identified Cocaine Sample 1",
+        "image_name": "inventory-sample1",
         "usable": false
     },
     {
-        "key": "identified-mdma",
-        "name": "Identified Mdma Sample",
-        "image_name": "inventory-mdma",
+        "key": "identified-sample2",
+        "name": "Identified Cocaine Sample 2",
+        "image_name": "inventory-sample2",
         "usable": false
     },
     {
-        "key": "identified-meth",
-        "name": "Identified Meth Sample",
-        "image_name": "inventory-meth",
+        "key": "identified-sample3",
+        "name": "Identified Cocaine Sample 3",
+        "image_name": "inventory-sample3",
         "usable": false
     }
 ]

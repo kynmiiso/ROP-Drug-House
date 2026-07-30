@@ -4,9 +4,9 @@
 default in_lab = False
 # SPE
 default spe_difficulty = 0 # 0 = full checklist, 1 = half checklist, 2 = low checklist
-default has_SPE_cocaine = False
-default has_SPE_mdma = False
-default has_SPE_meth = False
+default has_SPE_sample1 = False
+default has_SPE_sample2 = False
+default has_SPE_sample3 = False
 default step_SPE = ""
 default step_num_SPE = 1 # see ipad notes for specifics, relates to which step to do, related to the spe_spo
 default inv_call_SPE = ""
@@ -33,7 +33,7 @@ label solid_phase_extraction:
         hide nina normal1
         jump materials_lab
 
-    if has_SPE_cocaine and has_SPE_mdma and has_SPE_meth:
+    if has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3:
         show nina normal1
         n "All three samples have already been through Solid Phase Extraction."
         n "Head to the GC-MS to continue the analysis."
@@ -50,19 +50,19 @@ label solid_phase_extraction:
     n "Which drug sample do you want to dilute?"
     hide nina talk
     menu:
-        "Cocaine Sample" if not has_SPE_cocaine:
-            $ current_SPE_drug = "cocaine"
-            show beaker_cocaine:
+        "Sample 1" if not has_SPE_sample1:
+            $ current_SPE_drug = "sample1"
+            show beaker_sample1:
                 xalign 0.5
                 yalign 0.5
-        "MDMA Sample" if not has_SPE_mdma:
-            $ current_SPE_drug = "mdma"
-            show beaker_mdma:
+        "Sample 2" if not has_SPE_sample2:
+            $ current_SPE_drug = "sample2"
+            show beaker_sample2:
                 xalign 0.5
                 yalign 0.5
-        "Methamphetamine Sample" if not has_SPE_meth:
-            $ current_SPE_drug = "meth"
-            show beaker_meth:
+        "Sample 3" if not has_SPE_sample3:
+            $ current_SPE_drug = "sample3"
+            show beaker_sample3:
                 xalign 0.5
                 yalign 0.5
     jump SPE_dilute_question
@@ -190,13 +190,13 @@ label SPE_elution2:
         "37 Celsius":
             scene spe44
             "You've obtained the prepared sample."
-            if(has_SPE_cocaine and current_SPE_drug == "cocaine"):
-                $ evidence.add_to_inventory(evids["Prepared Cocaine Sample"])
-            elif(has_SPE_mdma and current_SPE_drug == "mdma"):
-                $ evidence.add_to_inventory(evids["Prepared MDMA Sample"])
-            elif(has_SPE_meth and current_SPE_drug == "meth"):
-                $ evidence.add_to_inventory(evids["Prepared Meth Sample"])
-            if(has_SPE_cocaine and has_SPE_mdma and has_SPE_meth):
+            if(has_SPE_sample1 and current_SPE_drug == "sample1"):
+                $ evidence.add_to_inventory(evids["Prepared Sample 1"])
+            elif(has_SPE_sample2 and current_SPE_drug == "sample2"):
+                $ evidence.add_to_inventory(evids["Prepared Sample 2"])
+            elif(has_SPE_sample3 and current_SPE_drug == "sample3"):
+                $ evidence.add_to_inventory(evids["Prepared Sample 3"])
+            if(has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3):
                 $ gcms_step = 3
                 $ choice_SPE = "COMPLETED"
             # reset counter
@@ -205,7 +205,7 @@ label SPE_elution2:
             $ current_SPE_drug = ""
             hide screen spe_spo
 
-            if has_SPE_cocaine and has_SPE_mdma and has_SPE_meth:
+            if has_SPE_sample1 and has_SPE_sample2 and has_SPE_sample3:
                 $ gcms_step = 3
                 $ choice_SPE = "COMPLETED"
                 show screen back_button_screen('materials_lab') onlayer over_screens
@@ -322,31 +322,31 @@ label useWater: # use water
                     "Wrong amount."
                     jump expression inv_call_SPE
 
-label useCocaine:
+label useSample1:
     if location == "solid_phase_extraction":
-        if(step_num_SPE == 3 and current_SPE_drug == "cocaine"):
-            $ has_SPE_cocaine = True
-            $ evidence.delete_from_inventory(evids["Cocaine Sample"])
+        if(step_num_SPE == 3 and current_SPE_drug == "sample1"):
+            $ has_SPE_sample1 = True
+            $ evidence.delete_from_inventory(evids["Sample 1"])
             jump expression step_SPE
         else:
             "Wrong compound!"
             jump expression inv_call_SPE
 
-label useMDMA:
+label useSample2:
     if location == "solid_phase_extraction":
-        if(step_num_SPE == 3 and current_SPE_drug == "mdma"):
-            $ has_SPE_mdma = True
-            $ evidence.delete_from_inventory(evids["MDMA Sample"])
+        if(step_num_SPE == 3 and current_SPE_drug == "sample2"):
+            $ has_SPE_sample2 = True
+            $ evidence.delete_from_inventory(evids["Sample 2"])
             jump expression step_SPE
         else:
             "Wrong compound!"
             jump expression inv_call_SPE
 
-label useMeth:
+label useSample3:
     if location == "solid_phase_extraction":
-        if(step_num_SPE == 3 and current_SPE_drug == "meth"):
-            $ has_SPE_meth = True
-            $ evidence.delete_from_inventory(evids["Meth Sample"])
+        if(step_num_SPE == 3 and current_SPE_drug == "sample3"):
+            $ has_SPE_sample3 = True
+            $ evidence.delete_from_inventory(evids["Sample3"])
             jump expression step_SPE
         else:
             "Wrong compound!"

@@ -482,9 +482,9 @@ screen lab_notebook():
 screen analytical_balance_screen():
     $ balance_image = {
         "zero":     "analytical_balance_zero",
-        "cocaine":  "analytical_balance_cocaine",
-        "mdma":     "analytical_balance_mdma",
-        "meth":     "analytical_balance_meth",
+        "sample1":  "analytical_balance_sample1",
+        "sample2":     "analytical_balance_sample2",
+        "sample3":     "analytical_balance_sample3",
     }[balance_state]
     add balance_image at Transform(xalign=0.5, yalign=0.5)
 
@@ -566,8 +566,8 @@ screen gcms_screen():
             action Jump("gcms_compare_interface")
 
 screen gcms_compare_screen():
-    $ ref_charts  = {"cocaine": "cocaine_gcms_charts", "mdma": "mdma_gcms_charts", "meth": "meth_gcms_charts"}
-    $ ref_keys    = ["cocaine", "mdma", "meth"]
+    $ ref_charts  = {"sample1": "sample1_gcms_charts", "sample2": "sample2_gcms_charts", "sample3": "sample3_gcms_charts"}
+    $ ref_keys    = ["sample1", "sample2", "sample3"]
     $ evidence_chart  = "evidence_sample_%s_gcms_charts" % gcms_current_drug
     $ reference_chart = ref_charts[ref_keys[gcms_ref_index]]
 

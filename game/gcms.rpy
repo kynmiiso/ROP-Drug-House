@@ -1,5 +1,5 @@
 default gcms_step = 1
-default gcms_queue_done = {"cocaine": False, "mdma": False, "meth": False}
+default gcms_queue_done = {"sample1": False, "sample2": False, "sample3": False}
 default gcms_current_drug = None
 default gcms_ref_index = 0
 
@@ -10,11 +10,11 @@ init python:
     def get_next_gcms_drug():
         """Return the next prepared sample still awaiting GC-MS analysis, or None."""
         prepared = {
-            "cocaine": has_SPE_cocaine,
-            "mdma":    has_SPE_mdma,
-            "meth":    has_SPE_meth,
+            "sample1":      has_SPE_sample1,
+            "sample2":      has_SPE_sample2,
+            "sample3":      has_SPE_sample3,
         }
-        for drug in ("cocaine", "mdma", "meth"):
+        for drug in ("sample1", "sample2", "sample3"):
             if prepared[drug] and not gcms_queue_done[drug]:
                 return drug
         return None
@@ -27,9 +27,9 @@ init python:
 
         dragged_image = drags[0].drag_name
         expected = {
-            "cocaine": "inventory-prepared_cocaine",
-            "mdma":    "inventory-prepared_mdma",
-            "meth":    "inventory-prepared_meth",
+            "sample1":      "inventory-prepared_sample1",
+            "sample2":      "inventory-prepared_sample2",
+            "sample3":      "inventory-prepared_sample3",
         }[store.gcms_current_drug]
 
         if dragged_image == expected:
@@ -67,12 +67,12 @@ label gcms:
     hide nina talk
 
     menu:
-        "Cocaine Sample" if has_SPE_cocaine and not gcms_queue_done["cocaine"]:
-            $ gcms_current_drug = "cocaine"
-        "MDMA Sample" if has_SPE_mdma and not gcms_queue_done["mdma"]:
-            $ gcms_current_drug = "mdma"
-        "Methamphetamine Sample" if has_SPE_meth and not gcms_queue_done["meth"]:
-            $ gcms_current_drug = "meth"
+        "Sample 1" if has_SPE_sample1 and not gcms_queue_done["sample1"]:
+            $ gcms_current_drug = "sample1"
+        "Sample 2" if has_SPE_sample2 and not gcms_queue_done["sample2"]:
+            $ gcms_current_drug = "sample2"
+        "Sample 3" if has_SPE_sample3 and not gcms_queue_done["sample3"]:
+            $ gcms_current_drug = "sample3"
 
     $ gcms_step = 2
     show nina normal1
@@ -126,7 +126,7 @@ label gcms_run:
     n "A lab certified cocaine reference standard has already been analyzed under the same GC-MS laboratory conditions used for the evidence samples."
     hide nina normal1
     show nina thinknote1
-    n "Use the reference chromatogram and mass spectrum to identify the cocaine peak in the evidence samples and determine whether the unknown samples are consistent with cocaine."
+    n "Use the reference chromatogram and mass spectrum to identify the most prominent peak in the evidence samples and determine whether the unknown samples are consistent with cocaine."
     hide nina thinknote1
 
     $ gcms_step = 8
@@ -148,7 +148,7 @@ label gcms_compare_next:
     call screen gcms_compare_screen
 
 label gcms_identify:
-    $ ref_keys = ["cocaine", "mdma", "meth"]
+    $ ref_keys = ["sample1", "sample2", "sample3"]
     $ chosen = ref_keys[gcms_ref_index]
 
     if chosen == gcms_current_drug:
