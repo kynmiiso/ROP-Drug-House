@@ -188,13 +188,16 @@ init -5 python:
         return True
 
     def _use_tool(tool_name):
-        if testing_item is None:
-            renpy.notify("Select an evidence item first.")
-            return
         image_name = _TOOL_NAME_TO_IMAGE.get(tool_name)
         if image_name is None:
             renpy.notify("This tool can't be used here.")
             return
+
+        # Crime-scene evidence testing requires an inspected item first.
+        if store.location not in ("analytical_balance",) and store.testing_item is None:
+            renpy.notify("Select an evidence item first.")
+            return
+
         store.selected_tool = image_name
         renpy.restart_interaction()
 
@@ -293,7 +296,7 @@ init -5 python:
         else:
             say("Bring this to the balance or SPE to use it.")
 
-    def use_mdma_sample():
+    def use_sample2():
         if location == "analytical_balance":
             analytical_balance_use_sample("sample2")
         elif location == "solid_phase_extraction":
@@ -301,7 +304,7 @@ init -5 python:
         else:
             say("Bring this to the balance or SPE to use it.")
 
-    def use_meth_sample():
+    def use_sample3():
         if location == "analytical_balance":
             analytical_balance_use_sample("sample3")
         elif location == "solid_phase_extraction":
@@ -310,11 +313,16 @@ init -5 python:
             say("Bring this to the balance or SPE to use it.")
 
     def analytical_balance_use_sample(drug):
-        if store.balance_state != "zero":
-            say("Remove the current sample before weighing another.")
+        if store.location != "analytical_balance":
+            say("Bring this to the balance to weigh it.")
             return
-        store.balance_state = drug
-        weigh_sample(drug)
+        if store.balance_state != "zero":
+            say("Remove the current item from the balance before weighing another.")
+            return
+        if store.weighed_gross[drug]:
+            say("This sample's gross weight has already been recorded.")
+            return
+        store.selected_tool = "inventory-" + drug
         renpy.restart_interaction()
 
     def use_prepared_sample1():

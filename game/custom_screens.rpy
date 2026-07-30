@@ -186,10 +186,11 @@ screen reagent_result(item):
     modal False
     $ _reagent = current_reagent.get(item)
     if _reagent == "marquis":
-        add "tube1" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+        add "sample1_tube" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
     elif _reagent == "scott":
-        add "marquis_tube" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-# initial screen
+        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+
+# lab start
 screen lab_hallway_screen:
     image "lab_hallway_dim"
     hbox:
@@ -468,42 +469,24 @@ screen lab_notebook():
         vbox:
             spacing 15
             text "{b}Lab Notebook{/b}" size 40 color "#012a4a"
-
             text "Sample Weights:" size 30 color "#474646"
-            for drug, weight in drug_weights.items():
-                text (f"Presumed  {drug.capitalize()}: {weight} g" if weight is not None else f" Presumed {drug.capitalize()}: Not yet weighed") size 26 color "#474646"
+            for drug, weights in drug_weights.items():
+                $ net = weights["net"]
+                $ gross = weights["gross"]
+                text (f"Presumed Drug {drug.capitalize()}: " + (f"{net} g" if net is not None else "not yet weighed")) size 24 color "#474646"
+                text (f"Presumed Drug {drug.capitalize()} Bag: " + (f"{gross} g" if gross is not None else "not yet weighed")) size 24 color "#474646"
 
         textbutton "✕":
             xalign 0.95 yalign 0.05
             action Hide("lab_notebook")
 
 screen analytical_balance_screen():
-    $ balance_image = {
-        "zero":     "analytical_balance_zero",
-        "sample1":  "analytical_balance_sample1",
-        "sample2":     "analytical_balance_sample2",
-        "sample3":     "analytical_balance_sample3",
-    }[balance_state]
-    add balance_image at Transform(xalign=0.5, yalign=0.5)
+    add "analytical_balance_zero" at Transform(xalign=0.5, yalign=0.5)
 
-    if balance_state == "zero":
-        draggroup:
-            if selected_tool is not None:
-                drag:
-                    drag_name selected_tool
-                    draggable True
-                    droppable False
-                    dragging item_dragging_package
-                    dragged  analytical_balance_drop
-                    xpos 0.75 ypos 0.35
-                    child Transform(selected_tool, zoom=1.5)
-            drag:
-                drag_name "analytical_balance_dropzone"
-                draggable False
-                droppable True
-                xalign 0.5 yalign 0.5
-                child Transform(Solid("#00000000"), size=(300, 300))
-    else:
+    if balance_state == "result":
+        $ _result_img = "analytical_balance_%s_%s" % (balance_result_type, balance_result_drug)
+        add _result_img at Transform(xalign=0.5, yalign=0.5)
+
         textbutton "Remove Sample":
             xalign 0.5 ypos 0.85
             xsize 400 ysize 90
@@ -512,8 +495,82 @@ screen analytical_balance_screen():
             text_align 0.5
             background "#012a4a"
             hover_background "#0466c8"
-            action [SetVariable("balance_state", "zero"), Function(renpy.restart_interaction)]
-            
+            action Function(clear_balance)
+
+    else:
+        if not all(weighed_net.values()) or weighboat_state == "loaded":
+            draggroup:
+                if selected_tool == "spatula_idle":
+                    drag:
+                        drag_name selected_tool
+                        draggable True
+                        droppable False
+                        dragging item_dragging_package
+                        dragged  sample_bag_drop
+                        xpos 0.85 ypos 0.65
+                        child Transform(selected_tool, zoom=1.2)
+                elif selected_tool == "spatula_powder":
+                    drag:
+                        drag_name selected_tool
+                        draggable True
+                        droppable False
+                        dragging item_dragging_package
+                        dragged  weighboat_drop
+                        xpos 0.85 ypos 0.65
+                        child Transform(selected_tool, zoom=1.2)
+
+                for _drug in ["sample1", "sample2", "sample3"]:
+                    if not weighed_net[_drug]:
+                        $ _tx = {"sample1": 0.15, "sample2": 0.25, "sample3": 0.35}[_drug]
+                        drag:
+                            drag_name (_drug + "_idle")
+                            draggable False
+                            droppable True
+                            xpos _tx ypos 0.75
+                            child Transform((_drug + "_idle"), zoom=1.2)
+
+                if weighboat_state == "empty":
+                    drag:
+                        drag_name "weighboat_dropzone"
+                        draggable False
+                        droppable True
+                        xpos 0.5 ypos 0.75
+                        child Transform("weighboat_idle", zoom=1.2)
+
+        if weighboat_state == "loaded":
+            draggroup:
+                drag:
+                    drag_name "weighboat_loaded"
+                    draggable True
+                    droppable False
+                    dragging item_dragging_package
+                    dragged  analytical_balance_drop
+                    xpos 0.5 ypos 0.75
+                    child Transform("weighboat_loaded", zoom=1.2)
+                drag:
+                    drag_name "analytical_balance_dropzone"
+                    draggable False
+                    droppable True
+                    xalign 0.5 yalign 0.35
+                    child Transform(Solid("#00000000"), size=(300, 300))
+
+        draggroup:
+            if selected_tool in ("inventory-sample1", "inventory-sample2", "inventory-sample3"):
+                drag:
+                    drag_name selected_tool
+                    draggable True
+                    droppable False
+                    dragging item_dragging_package
+                    dragged  analytical_balance_drop
+                    xpos 0.75 ypos 0.55
+                    child Transform(selected_tool, zoom=1.2)
+            drag:
+                drag_name "analytical_balance_dropzone"
+                draggable False
+                droppable True
+                xalign 0.5 yalign 0.35
+                child Transform(Solid("#00000000"), size=(300, 300))
+
 screen gcms_checklist():
     add "images/materials_lab/gcms/gcms_checklist/gcms_checklist_%d.png" % gcms_step:
         xalign 0.999999

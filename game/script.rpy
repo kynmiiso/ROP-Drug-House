@@ -66,7 +66,8 @@ init python:
 
     SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent", "Spatula",
                         "Tube", "Evidence Bag", "Tamper Evident Tape"]
-    LAB_TOOL_NAMES = ["Distilled Water", "Superglue", "100% Methanol", "1% Formic acid", "0.1% Formic acid", "Methanol and 5% Ammonium Hydroxide"]
+    LAB_TOOL_NAMES = ["Distilled Water", "Superglue", "100% Methanol", "1% Formic acid", "0.1% Formic acid", 
+                    "Methanol and 5% Ammonium Hydroxide", "Spatula"]
 
     def load_scene_toolbox():
         toolbox.reset_inventory()
@@ -541,27 +542,27 @@ label evidence_quiz:
 
         jump evidence_wait_step
 
-    label evidence_done:
-        hide screen drug_collection_screen
-        hide screen drug_processing_screen
-        hide screen placed_marker_display
-        hide screen colour_chart
-        hide screen reagent_result
-        hide screen inventory
-        scene house interior
+label evidence_done:
+    hide screen drug_collection_screen
+    hide screen drug_processing_screen
+    hide screen placed_marker_display
+    hide screen colour_chart
+    hide screen reagent_result
+    hide screen inventory
+    scene house interior
 
-        $ testing_item              = None
-        $ selected_tool             = None
-        $ collect_step_flag         = False
-        $ quiz_pending              = False
-        # $ fingerprint_collected     = False
-        # $ fingerprint_collect_ready = False
-        $ collect_step_ready        = False
+    $ testing_item              = None
+    $ selected_tool             = None
+    $ collect_step_flag         = False
+    $ quiz_pending              = False
+    # $ fingerprint_collected     = False
+    # $ fingerprint_collect_ready = False
+    $ collect_step_ready        = False
 
-        $ renpy.restart_interaction()
+    $ renpy.restart_interaction()
 
-        show screen investigation_buttons
-        jump scene_room_loop
+    show screen investigation_buttons
+    jump scene_room_loop
 
 label scene_room_loop:
     show screen investigation_buttons
