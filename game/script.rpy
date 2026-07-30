@@ -170,7 +170,7 @@ default valid_evidence_steps = {
             {"drop_target_idle":        "marker_dynamic"},
             {"sample1_idle":            "spatula_idle"},
             {"spatula_powder":          "tube_idle"},
-            {"sample1_tube":            "scott_reagent_idle"},
+            {"sample1_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample1_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -180,7 +180,7 @@ default valid_evidence_steps = {
             {"drop_target_idle":        "marker_dynamic"},
             {"sample2_idle":            "spatula_idle"},
             {"spatula_powder":          "tube_idle"},
-            {"sample2_tube":            "scott_reagent_idle"},
+            {"sample2_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample2_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -190,7 +190,7 @@ default valid_evidence_steps = {
             {"drop_target_idle":        "marker_dynamic"},
             {"sample3_idle":            "spatula_idle"},
             {"spatula_powder":          "tube_idle"},
-            {"sample3_tube":            "scott_reagent_idle"},
+            {"sample3_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample3_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -241,6 +241,12 @@ default evidence_marker_placed = {
         "firearm": False,
         "cash":    False,
     }
+
+default current_reagent = {
+    "sample1": None,
+    "sample2": None,
+    "sample3": None,
+}
 
 default evidence_visited_order = []
 default testing_item        = None
@@ -343,32 +349,71 @@ init python:
 init python:
     _QUIZ = {
         "sample1": {
-            "chart":   "scott_chart",
-            "correct": "Cocaine",
-            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
-            "wrong": {
-                "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
-                "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
+            "scott": {
+                "chart": "scott_chart",
+                "correct": "Cocaine",
+                "correct_msg": "Correct! A blue reaction with the Scott test indicates cocaine.",
+                "wrong": {
+                    "MDMA":            "Incorrect. The Marquis test is used for MDMA.",
+                    "Methamphetamine": "Incorrect. The Marquis test is used for methamphetamine.",
+                    "Inconclusive":    "Incorrect. A clear blue Scott reaction is a conclusive presumptive result for cocaine.",
+                }
+            },
+            "marquis": {
+                "chart": "marquis_chart",
+                "correct": "Inconclusive",
+                "correct_msg": "Correct! No color change with the Marquis reagent means this result is inconclusive.",
+                "wrong": {
+                    "Cocaine":         "Incorrect. Cocaine typically shows no reaction with Marquis, but 'no reaction' alone isn't a positive identification.",
+                    "MDMA":            "Incorrect. MDMA would give a color change with Marquis, but there was no reaction.",
+                    "Methamphetamine": "Incorrect. Methamphetamine would give a color change with Marquis, but there was no reaction.",
+                }
             }
         },
         "sample2": {
-            "chart":   "scott_chart",
-            "correct": "Cocaine",
-            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
-            "wrong": {
-                "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
-                "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
+            "scott": {
+                "chart": "scott_chart",
+                "correct": "Cocaine",
+                "correct_msg": "Correct! A blue reaction with the Scott test indicates cocaine.",
+                "wrong": {
+                    "MDMA":            "Incorrect. The Marquis test is used for MDMA.",
+                    "Methamphetamine": "Incorrect. The Marquis test is used for methamphetamine.",
+                    "Inconclusive":    "Incorrect. A clear blue Scott reaction is a conclusive presumptive result for cocaine.",
+                }
+            },
+            "marquis": {
+                "chart": "marquis_chart",
+                "correct": "Inconclusive",
+                "correct_msg": "Correct! No color change with the Marquis reagent means this result is inconclusive.",
+                "wrong": {
+                    "Cocaine":         "Incorrect. Cocaine typically shows no reaction with Marquis, but 'no reaction' alone isn't a positive identification.",
+                    "MDMA":            "Incorrect. MDMA would give a color change with Marquis, but there was no reaction.",
+                    "Methamphetamine": "Incorrect. Methamphetamine would give a color change with Marquis, but there was no reaction.",
+                }
             }
         },
         "sample3": {
-            "chart":   "scott_chart",
-            "correct": "Cocaine",
-            "correct_msg": "Correct! The pink on top and blue at the bottom with the Scott test indicates cocaine.",
-            "wrong": {
-                "MDMA":           "Incorrect. The Marquis test is used for MDMA.",
-                "Methamphetamine":"Incorrect. The Marquis test is used for methamphetamine.",
+            "scott": {
+                "chart": "scott_chart",
+                "correct": "Cocaine",
+                "correct_msg": "Correct! A blue reaction with the Scott test indicates cocaine.",
+                "wrong": {
+                    "MDMA":            "Incorrect. The Marquis test is used for MDMA.",
+                    "Methamphetamine": "Incorrect. The Marquis test is used for methamphetamine.",
+                    "Inconclusive":    "Incorrect. A clear blue Scott reaction is a conclusive presumptive result for cocaine.",
+                }
+            },
+            "marquis": {
+                "chart": "marquis_chart",
+                "correct": "Inconclusive",
+                "correct_msg": "Correct! No color change with the Marquis reagent means this result is inconclusive.",
+                "wrong": {
+                    "Cocaine":         "Incorrect. Cocaine typically shows no reaction with Marquis, but 'no reaction' alone isn't a positive identification.",
+                    "MDMA":            "Incorrect. MDMA would give a color change with Marquis, but there was no reaction.",
+                    "Methamphetamine": "Incorrect. Methamphetamine would give a color change with Marquis, but there was no reaction.",
+                }
             }
-        },
+        }
     }
 
 label inspect_evidence:
@@ -398,6 +443,14 @@ label inspect_evidence:
     label evidence_wait_step:
         if evidence_found[testing_item + "_processed"]:
             jump evidence_done
+
+        if quiz_pending and current_reagent[testing_item] == "marquis":
+            hide screen drug_processing_screen
+            show nina normal1
+            n "Looks like there was no reaction."
+            hide nina normal1
+            show screen inventory
+            jump evidence_quiz
 
         if quiz_pending:
             jump evidence_quiz
@@ -445,9 +498,10 @@ label inspect_evidence:
         $ renpy.restart_interaction()
         jump evidence_done
 
-    label evidence_quiz:
+label evidence_quiz:
         hide screen drug_processing_screen
-        $ _q = _QUIZ[testing_item]
+        $ _reagent = current_reagent[testing_item]
+        $ _q = _QUIZ[testing_item][_reagent]
         show screen colour_chart(_q["chart"])
         show screen reagent_result(testing_item)
         "What drug is this based on the colour reaction?"
@@ -458,6 +512,8 @@ label inspect_evidence:
                 hide screen colour_chart
                 hide screen reagent_result
                 "[_q['correct_msg']]"
+                if _reagent == "scott":
+                    $ evidence_found[testing_item + "_presumptive"] = True
 
             "[list(_q['wrong'].keys())[0]]":
                 hide screen colour_chart
@@ -471,6 +527,14 @@ label inspect_evidence:
                 hide screen colour_chart
                 hide screen reagent_result
                 "[_q['wrong'][list(_q['wrong'].keys())[1]]]"
+                show screen inventory
+                show screen colour_chart(_q["chart"])
+                jump evidence_quiz
+
+            "[list(_q['wrong'].keys())[2]]":
+                hide screen colour_chart
+                hide screen reagent_result
+                "[_q['wrong'][list(_q['wrong'].keys())[2]]]"
                 show screen inventory
                 show screen colour_chart(_q["chart"])
                 jump evidence_quiz

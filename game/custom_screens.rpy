@@ -184,13 +184,11 @@ screen colour_chart(chart_image):
 
 screen reagent_result(item):
     modal False
-    if item == "sample1":
-        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-    if item == "sample2":
-        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-    if item == "sample3":
-        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-
+    $ _reagent = current_reagent.get(item)
+    if _reagent == "marquis":
+        add "tube1" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+    elif _reagent == "scott":
+        add "marquis_tube" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
 # initial screen
 screen lab_hallway_screen:
     image "lab_hallway_dim"

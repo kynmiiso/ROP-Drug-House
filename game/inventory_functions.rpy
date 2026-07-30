@@ -131,6 +131,7 @@ init -5 python:
             return False
 
         correct_tool_image = list(step.values())[0]
+        required_list = correct_tool_image if isinstance(correct_tool_image, list) else [correct_tool_image]
 
         if correct_tool_image == "marker_dynamic":
             order = store.evidence_visited_order
@@ -142,12 +143,32 @@ init -5 python:
                 renpy.restart_interaction()
                 return False
             store.evidence_marker_placed[store.testing_item] = True
-        elif dragged_image != correct_tool_image:
+
+        elif dragged_image not in required_list:
             renpy.notify("That's not the right tool for this step.")
             store.selected_tool = None
             renpy.hide_screen("drug_processing_screen")
             renpy.restart_interaction()
             return False
+
+        if isinstance(correct_tool_image, list):
+            if dragged_image == "marquis_reagent_idle":
+                store.current_reagent[store.testing_item] = "marquis"
+                store.quiz_pending = True
+                store.selected_tool = None
+                renpy.restart_interaction()
+                return True
+            elif dragged_image == "scott_reagent_idle":
+                store.current_reagent[store.testing_item] = "scott"
+                store.evidence_found[store.testing_item + "_presumptive"] = True
+                _advance_step()
+                new_idx = store.evidence_step_index.get(store.testing_item, 0)
+                marker = _marker_after_index(store.testing_item, new_idx - 1)
+                if marker == "quiz":
+                    store.quiz_pending = True
+                store.selected_tool = None
+                renpy.restart_interaction()
+                return True
 
         _advance_step()
 
