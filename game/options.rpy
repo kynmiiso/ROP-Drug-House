@@ -12,8 +12,17 @@
 ##
 ## The _() surrounding the string marks it as eligible for translation.
 
-define config.name = _("Drug House Evidence Collection")
+define config.name = _("Forensics Pursuit Drug House")
+define config.rollback_enabled = False
+define config.allow_skipping = False
 
+define config.layers = ['master', 'transient', 'screens', 'over_screens', 'overlay']
+define config.console = True
+
+
+define config.mouse = {}
+define config.mouse['laptop_fingerprint'] = [('/images/mouse/laptop_fingerprint_mouse.png', 0, 0)]
+define config.mouse['screwdriver'] = [('/images/mouse/screwdriver_mouse.png', 0, 0)]
 
 ## Determines if the title given above is shown on the main menu screen. Set
 ## this to False to hide the title.
@@ -37,7 +46,7 @@ define gui.about = _p("""
 ## distribution. This must be ASCII-only, and must not contain spaces, colons,
 ## or semicolons.
 
-define build.name = "inventorytest"
+define build.name = "ForensicsPursuitDrugHouse"
 
 
 ## Sounds and music ############################################################
@@ -143,7 +152,7 @@ default preferences.afm_time = 15
 ## This generally should not be changed, and if it is, should always be a
 ## literal string, not an expression.
 
-define config.save_directory = "inventorytest-1777320548"
+define config.save_directory = "ForensicsLabL1Prototype-1720145659"
 
 
 ## Icon ########################################################################
