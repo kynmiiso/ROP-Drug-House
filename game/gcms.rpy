@@ -1,10 +1,26 @@
 default gcms_step = 1
 default gcms_queue_done = {"sample1": False, "sample2": False, "sample3": False}
 default gcms_current_drug = None
-default gcms_ref_index = 0
+default gcms_selected_peak = None
+default gcms_identified_adulterants = {"sample1": set(), "sample2": set(), "sample3": set()}
 
 init python:
     _SAMPLE_DISPLAY_NAME = {"sample1": "Sample 1", "sample2": "Sample 2", "sample3": "Sample 3"}
+
+    # Every evidence sample shows the same four peaks in this dataset as they are all cocaine
+
+    _GCMS_PEAKS = ["lidocaine", "caffeine", "cocaine", "levamisole"]
+    _GCMS_PEAK_POSITIONS = {
+        "lidocaine":  0.475,   # retention time 13.902
+        "caffeine":   0.505,   # retention time 14.461
+        "cocaine":    0.55,   # retention time 15.425
+        "levamisole": 0.60,   # retention time 16.365
+    }
+    _GCMS_ADULTERANT_NOTE = {
+        "lidocaine":  "Lidocaine is a local anesthetic commonly used as a cutting agent to mimic cocaine's numbing effect.",
+        "caffeine":   "Caffeine is a common cutting agent used to add bulk and a mild stimulant effect.",
+        "levamisole": "Levamisole is a veterinary dewormer frequently used to cut cocaine and add bulk/weight.",
+    }
 
     def say(what, who=None):
         renpy.invoke_in_new_context(renpy.say, who, what)
@@ -114,20 +130,20 @@ label gcms_set_time:
 label gcms_run:
     $ gcms_step = 5
     "Running the sample through the GC-MS..."
-    "A chromatogram appears on the monitor, displaying the separated compounds of the sample."
+    "A chromatogram appears on the monitor, displaying several separated peaks in the sample."
 
     $ gcms_step = 6
-    "You note the relative retention times (RRT) where the major peaks appear."
+    "You note the retention times where each peak appears."
 
     $ gcms_step = 7
-    "Generating the mass spectrum for the sample..."
-    "The mass spectrum for the sample has been generated."
+    "Generating mass spectra for the sample's peaks..."
+    "The mass spectra for the sample have been generated."
 
     show nina normal1
     n "A lab certified cocaine reference standard has already been analyzed under the same GC-MS laboratory conditions used for the evidence samples."
     hide nina normal1
     show nina thinknote1
-    n "Use the reference chromatogram and mass spectrum to identify the most prominent peak in the evidence samples and determine whether the unknown samples are consistent with cocaine."
+    n "Click through the peaks in your sample's chromatogram and compare each one's mass spectrum to the reference standard to find the primary compound."
     hide nina thinknote1
 
     $ gcms_step = 8
@@ -137,26 +153,17 @@ label gcms_run:
 
 label gcms_compare_interface:
     hide screen gcms_screen
-    $ gcms_ref_index = 0
-    call screen gcms_compare_screen
-
-label gcms_compare_prev:
-    $ gcms_ref_index = (gcms_ref_index - 1) % 3
-    call screen gcms_compare_screen
-
-label gcms_compare_next:
-    $ gcms_ref_index = (gcms_ref_index + 1) % 3
+    $ gcms_selected_peak = None
+    hide screen gcms_checklist
     call screen gcms_compare_screen
 
 label gcms_identify:
-    $ ref_keys = ["cocaine", "mdma", "meth"]
-    $ chosen = ref_keys[gcms_ref_index]
     $ sample_label = _SAMPLE_DISPLAY_NAME[gcms_current_drug]
 
-    if chosen == "cocaine":
+    if gcms_selected_peak == "cocaine":
         $ gcms_step = 9
-        "The RRT and mass spectrum for [sample_label] match the reference standard for cocaine."
-        "You've identified [sample_label] as cocaine."
+        "The retention time and mass spectrum for this peak in [sample_label] match the reference standard for cocaine."
+        "You've identified the primary compound in [sample_label] as cocaine."
 
         $ presumptive_result = evidence_found.get(gcms_current_drug + "_presumptive", False)
         show nina thinknote1
@@ -175,10 +182,22 @@ label gcms_identify:
                     n "Incorrect. The presumptive test result matches this GC-MS identification."
                     jump gcms_identify
         hide nina thinknote1
+
+        $ other_peaks = [p for p in _GCMS_PEAKS if p != "cocaine"]
+        show nina normal1
+        n "The other peaks in this chromatogram are common cutting agents, not the primary compound."
+        python:
+            for _p in other_peaks:
+                say(_GCMS_ADULTERANT_NOTE[_p], n)
+        hide nina normal1
+
         $ gcms_queue_done[gcms_current_drug] = True
         $ evidence.add_to_inventory(evids["Identified Cocaine " + sample_label])
         $ gcms_current_drug = None
+        $ gcms_selected_peak = None
         jump gcms
     else:
-        "That is not the correct reference standard for [sample_label]. Review the chromatogram and mass spectrum again."
+        "The mass spectrum for this peak does not match the cocaine reference standard."
+        "This peak is likely [gcms_selected_peak], a cutting agent rather than the primary compound. Review the other peaks in [sample_label]'s chromatogram."
+        $ gcms_selected_peak = None
         call screen gcms_compare_screen

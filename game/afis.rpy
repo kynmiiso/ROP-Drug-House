@@ -208,7 +208,7 @@ label import_print:
         $ renpy.show(name="print_r", at_list=[Transform(xpos=0.375, ypos=0.25, zoom=0.83)], what=current_print)
         call screen afis
     else:
-        s dismayed1 "We've already processed this print."
+        "We've already processed this print."
         call screen afis
 
 label show_next:

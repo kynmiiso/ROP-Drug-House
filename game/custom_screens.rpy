@@ -622,29 +622,39 @@ screen gcms_screen():
             action Jump("gcms_compare_interface")
 
 screen gcms_compare_screen():
-    $ ref_charts  = {"cocaine": "cocaine_gcms_charts", "mdma": "mdma_gcms_charts", "meth": "meth_gcms_charts"}
-    $ ref_keys    = ["cocaine", "mdma", "meth"]
-    $ evidence_chart  = "evidence_%s_gcms_charts" % gcms_current_drug
-    $ reference_chart = ref_charts[ref_keys[gcms_ref_index]]
+    $ evidence_chart = "evidence_%s_gcms_chromatogram" % gcms_current_drug
 
-    add "gcms_interface"
-    add evidence_chart  at Transform(xalign=0.5, ypos=0.25, zoom=0.83)
-    add reference_chart at Transform(xalign=0.5, ypos=0.45, zoom=0.83)
+    add "gcms_plain"
+    add evidence_chart at Transform(xalign=0.5, ypos=0.18, zoom=0.95)
 
-    imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.30, ypos=0.85)
-        action Jump("gcms_compare_prev")
-    text "Prev" xpos 0.34 ypos 0.88 size 50
+    for _compound in _GCMS_PEAKS:
+        $ _px = _GCMS_PEAK_POSITIONS[_compound]
+        textbutton "":
+            xpos _px ypos 0.23
+            xsize 50 ysize 220
+            background None
+            hover_background "#fff59d66"
+            action SetVariable("gcms_selected_peak", _compound)
 
-    imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.45, ypos=0.85)
-        action Jump("gcms_compare_next")
-    text "Next" xpos 0.49 ypos 0.88 size 50
+    if gcms_selected_peak:
+        text "Reference Standard for Cocaine" xalign 0.29 ypos 0.55 size 26 color "#000000"
+        add "cocaine_reference_mass_spectrum" at Transform(xalign=0.25, ypos=0.60)
 
-    imagebutton:
-        auto "afis_button_%s" at Transform(xpos=0.60, ypos=0.85)
-        action Jump("gcms_identify")
-    text "Identify" xpos 0.62 ypos 0.88 size 50
+        text "Selected Peak" xalign 0.69 ypos 0.55 size 26 color "#000000"
+        $ _evidence_mass_spec = "evidence_%s_gcms_massspec_%s" % (gcms_current_drug, gcms_selected_peak)
+        add _evidence_mass_spec at Transform(xalign=0.75, ypos=0.60)
+
+        textbutton "Identify as Primary Compound":
+            xalign 0.5 ypos 0.85
+            xsize 480 ysize 90
+            text_size 36
+            text_color "#ffffff"
+            text_align 0.5
+            background "#012a4a"
+            hover_background "#0466c8"
+            action Jump("gcms_identify")
+    else:
+        text "Click a peak on the chromatogram above to view its mass spectrum." xalign 0.5 ypos 0.50 size 28 color "#000000"
 
 screen gcms_open_autosampler():
     add "gcms_background" at Transform(xalign=0.5, yalign=0.5)
