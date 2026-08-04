@@ -103,6 +103,12 @@ init python:
             return True
         else:
             return False
+
+    def check_lab_complete():
+        if analyzed_everything():
+            renpy.hide_screen("full_inventory")
+            renpy.jump("lab_end")
+
 # ---------------------------------------------------------------------------------------
     """The code in this section defines all the fingerprints - importable and 
     non-importable! Feel free to play around with the existing code and/or 

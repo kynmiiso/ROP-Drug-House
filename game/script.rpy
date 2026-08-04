@@ -65,7 +65,7 @@ init python:
     tools = load_items("jsons/toolbox.json")
 
     SCENE_TOOL_NAMES = ["Evidence Markers", "Marquis Reagent", "Scott Reagent", "Spatula",
-                        "Tube", "Evidence Bag", "Tamper Evident Tape"]
+                        "Evidence Bag", "Tamper Evident Tape"]
     LAB_TOOL_NAMES = ["Distilled Water", "Superglue", "100% Methanol", "1% Formic acid", "0.1% Formic acid", 
                     "Methanol and 5% Ammonium Hydroxide", "Spatula"]
 
@@ -130,9 +130,12 @@ init python:
         evidence.processed = True
 
         for e in afis_evidence:
-            if e.processed and e!= evidence:
+            if e.processed and e != evidence:
                 afis_search.append(e)
-    
+
+        if analyzed_everything():
+            renpy.jump("lab_end")
+            
     def close_menu():
         if renpy.get_screen("casefile_physical"):
             renpy.hide_screen("casefile_physical")
@@ -183,8 +186,7 @@ default valid_evidence_steps = {
         "sample1": [
             {"drop_target_idle":        "marker_dynamic"},
             {"sample1_idle":            "spatula_idle"},
-            {"spatula_powder":          "tube_idle"},
-            {"sample1_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
+            {"spatula_powder":          ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample1_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -193,8 +195,7 @@ default valid_evidence_steps = {
         "sample2": [
             {"drop_target_idle":        "marker_dynamic"},
             {"sample2_idle":            "spatula_idle"},
-            {"spatula_powder":          "tube_idle"},
-            {"sample2_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
+            {"spatula_powder":          ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample2_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -203,8 +204,7 @@ default valid_evidence_steps = {
         "sample3": [
             {"drop_target_idle":        "marker_dynamic"},
             {"sample3_idle":            "spatula_idle"},
-            {"spatula_powder":          "tube_idle"},
-            {"sample3_tube":            ["scott_reagent_idle", "marquis_reagent_idle"]},
+            {"spatula_powder":          ["scott_reagent_idle", "marquis_reagent_idle"]},
             "quiz",
             {"sample3_idle":            "evidence_bag_idle"},
             {"evidence_bag_idle":       "tamper_evident_tape_idle"},
@@ -364,17 +364,15 @@ init python:
     _QUIZ = {
         "sample1": {
             "scott": {
-                "chart": "scott_chart",
                 "correct": "Cocaine",
-                "correct_msg": "Correct! A blue reaction with the Scott test indicates cocaine.",
+                "correct_msg": "Correct! A pink upper layer and blue lower layer with the Scott test is a presumptive positive for cocaine.",
                 "wrong": {
                     "MDMA":            "Incorrect. The Marquis test is used for MDMA.",
                     "Methamphetamine": "Incorrect. The Marquis test is used for methamphetamine.",
-                    "Inconclusive":    "Incorrect. A clear blue Scott reaction is a conclusive presumptive result for cocaine.",
+                    "Inconclusive":    "Incorrect. The pink and blue layers result is a conclusive presumptive result for cocaine.",
                 }
             },
             "marquis": {
-                "chart": "marquis_chart",
                 "correct": "Inconclusive",
                 "correct_msg": "Correct! No color change with the Marquis reagent means this result is inconclusive.",
                 "wrong": {
@@ -454,106 +452,118 @@ label inspect_evidence:
     if evidence_marker_placed[testing_item]:
         show screen placed_marker_display(_marker_img)
 
-    label evidence_wait_step:
-        if evidence_found[testing_item + "_processed"]:
-            jump evidence_done
-
-        if quiz_pending and current_reagent[testing_item] == "marquis":
-            hide screen drug_processing_screen
-            show nina normal1
-            n "Looks like there was no reaction."
-            hide nina normal1
-            show screen inventory
-            jump evidence_quiz
-
-        if quiz_pending:
-            jump evidence_quiz
-
-        if collect_step_ready:
-            jump collect_step
-
-        if evidence_step_index[testing_item] > 0:
-            show screen placed_marker_display(_marker_img)
-        else:
-            hide screen placed_marker_display
-
-        $ drop_img = _current_drop_image()
-        $ xp, yp = marker_drop_positions[testing_item] if _is_marker_step() else evidence_positions[testing_item]
-
-        if _is_marker_step() and not evidence_marker_placed[testing_item]:
-            if not renpy.get_screen("notify"):
-                $ renpy.notify("Place an evidence marker here")
-
-        show screen drug_processing_screen(drop_img, xp, yp)
-        $ renpy.pause(0.3)
-        jump evidence_wait_step
-
-    # label fingerprint_collect_step:
-    #     $ fingerprint_collect_ready = False
-    #     hide screen drug_processing_screen
-    #     show screen drug_collection_screen
-    #     "Click to collect and package the lifted fingerprint."
-    #     $ evidence_found["fingerprint_processed"] = True
-    #     $ evidence_found["fingerprint_packaged"]  = True
-    #     $ evidence.add_to_inventory(evids_by_key["fingerprint"])
-    #     $ fingerprint_collected = True
-    #     $ renpy.restart_interaction()
-    #     hide screen drug_collection_screen
-    #     jump evidence_wait_step
-
-    label collect_step:
-        $ collect_step_ready = False
-        hide screen drug_processing_screen
-        show screen drug_collection_screen
-        "Click to collect and package the evidence."
-        $ evidence_found[testing_item + "_processed"] = True
-        $ evidence_found[testing_item + "_packaged"]  = True
-        $ evidence.add_to_inventory(evids_by_key[testing_item])
-        $ renpy.restart_interaction()
+label evidence_wait_step:
+    if evidence_found[testing_item + "_processed"]:
         jump evidence_done
 
-label evidence_quiz:
+    if quiz_pending and current_reagent[testing_item] == "marquis":
         hide screen drug_processing_screen
-        $ _reagent = current_reagent[testing_item]
-        $ _q = _QUIZ[testing_item][_reagent]
-        show screen colour_chart(_q["chart"])
-        show screen reagent_result(testing_item)
-        "What drug is this based on the colour reaction?"
+        show nina normal1
+        n "Looks like there was no reaction."
+        hide nina normal1
+        show screen inventory
+        jump evidence_quiz
 
-        menu:
-            "[_q['correct']]":
-                $ quiz_pending = False
-                hide screen colour_chart
-                hide screen reagent_result
-                "[_q['correct_msg']]"
-                if _reagent == "scott":
-                    $ evidence_found[testing_item + "_presumptive"] = True
+    if quiz_pending and current_reagent[testing_item] == "scott":
+        hide screen drug_processing_screen
+        "You add a small amount of the suspected substance directly into the test packet."
+        show screen scott_reaction_stage("scott_reagent_blue")
+        "You snap the first ampoule, releasing the cobalt thiocyanate reagent, and gently shake the pouch."
+        "The contents turn a deep blue."
+        hide screen scott_reaction_stage
+        show screen scott_reaction_stage("scott_reagent_pink")
+        "You snap the second ampoule, releasing hydrochloric acid, and shake the pouch again."
+        "The blue fades and the contents turn pink."
+        hide screen scott_reaction_stage
+        show screen scott_reaction_stage("scott_reagent_positive")
+        "You snap the third ampoule, releasing the organic solvent, and give the pouch one final shake."
+        "The contents separate into two layers, with a pink layer on top and blue layer at the bottom."
+        "You compare this result to the interpretation chart printed on the front of the packet."
+        hide screen scott_reaction_stage
+        show screen inventory
+        jump evidence_quiz
 
-            "[list(_q['wrong'].keys())[0]]":
-                hide screen colour_chart
-                hide screen reagent_result
-                "[_q['wrong'][list(_q['wrong'].keys())[0]]]"
-                show screen inventory
-                show screen colour_chart(_q["chart"])
-                jump evidence_quiz
+    if quiz_pending:
+        jump evidence_quiz
 
-            "[list(_q['wrong'].keys())[1]]":
-                hide screen colour_chart
-                hide screen reagent_result
-                "[_q['wrong'][list(_q['wrong'].keys())[1]]]"
-                show screen inventory
-                show screen colour_chart(_q["chart"])
-                jump evidence_quiz
+    if collect_step_ready:
+        jump collect_step
 
-            "[list(_q['wrong'].keys())[2]]":
-                hide screen colour_chart
-                hide screen reagent_result
-                "[_q['wrong'][list(_q['wrong'].keys())[2]]]"
-                show screen inventory
-                show screen colour_chart(_q["chart"])
-                jump evidence_quiz
+    if evidence_step_index[testing_item] > 0:
+        show screen placed_marker_display(_marker_img)
+    else:
+        hide screen placed_marker_display
 
-        jump evidence_wait_step
+    $ drop_img = _current_drop_image()
+    $ xp, yp = marker_drop_positions[testing_item] if _is_marker_step() else evidence_positions[testing_item]
+
+    if _is_marker_step() and not evidence_marker_placed[testing_item]:
+        if not renpy.get_screen("notify"):
+            $ renpy.notify("Place an evidence marker here")
+
+    show screen drug_processing_screen(drop_img, xp, yp)
+    $ renpy.pause(0.3)
+    jump evidence_wait_step
+
+# label fingerprint_collect_step:
+#     $ fingerprint_collect_ready = False
+#     hide screen drug_processing_screen
+#     show screen drug_collection_screen
+#     "Click to collect and package the lifted fingerprint."
+#     $ evidence_found["fingerprint_processed"] = True
+#     $ evidence_found["fingerprint_packaged"]  = True
+#     $ evidence.add_to_inventory(evids_by_key["fingerprint"])
+#     $ fingerprint_collected = True
+#     $ renpy.restart_interaction()
+#     hide screen drug_collection_screen
+#     jump evidence_wait_step
+
+label collect_step:
+    $ collect_step_ready = False
+    hide screen drug_processing_screen
+    show screen drug_collection_screen
+    "Click to collect and package the evidence."
+    $ evidence_found[testing_item + "_processed"] = True
+    $ evidence_found[testing_item + "_packaged"]  = True
+    $ evidence.add_to_inventory(evids_by_key[testing_item])
+    $ renpy.restart_interaction()
+    jump evidence_done
+
+label evidence_quiz:
+    hide screen drug_processing_screen
+    $ _reagent = current_reagent[testing_item]
+    $ _q = _QUIZ[testing_item][_reagent]
+    show screen reagent_result(testing_item)
+    "What drug is this based on the colour reaction?"
+
+    menu:
+        "[_q['correct']]":
+            $ quiz_pending = False
+            hide screen reagent_result
+            "[_q['correct_msg']]"
+
+        "[list(_q['wrong'].keys())[0]]":
+            hide screen reagent_result
+            "[_q['wrong'][list(_q['wrong'].keys())[0]]]"
+            show screen inventory
+            show screen reagent_result(testing_item)
+            jump evidence_quiz
+
+        "[list(_q['wrong'].keys())[1]]":
+            hide screen reagent_result
+            "[_q['wrong'][list(_q['wrong'].keys())[1]]]"
+            show screen inventory
+            show screen reagent_result(testing_item)
+            jump evidence_quiz
+
+        "[list(_q['wrong'].keys())[2]]":
+            hide screen reagent_result
+            "[_q['wrong'][list(_q['wrong'].keys())[2]]]"
+            show screen inventory
+            show screen reagent_result(testing_item)
+            jump evidence_quiz
+
+    jump evidence_wait_step
 
 label evidence_done:
     hide screen drug_collection_screen

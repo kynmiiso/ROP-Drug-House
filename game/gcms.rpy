@@ -195,6 +195,8 @@ label gcms_identify:
         $ evidence.add_to_inventory(evids["Identified Cocaine " + sample_label])
         $ gcms_current_drug = None
         $ gcms_selected_peak = None
+        if analyzed_everything():
+            jump lab_end
         jump gcms
     else:
         "The mass spectrum for this peak does not match the cocaine reference standard."

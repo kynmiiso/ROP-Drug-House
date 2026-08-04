@@ -185,10 +185,13 @@ screen colour_chart(chart_image):
 screen reagent_result(item):
     modal False
     $ _reagent = current_reagent.get(item)
-    if _reagent == "marquis":
-        add "sample1_tube" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
-    elif _reagent == "scott":
-        add "cocaine_blue_pink" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+    if _reagent == "scott":
+        add "scott_reagent_positive" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+    elif _reagent == "marquis":
+        add "marquis_reagent_idle" at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
+
+screen scott_reaction_stage(image_name):
+    add image_name at Transform(zoom=1.5, xalign=0.75, yalign=0.3)
 
 # lab start
 screen lab_hallway_screen:
@@ -462,20 +465,22 @@ screen lab_notebook():
     frame:
         align (0.5, 0.5)
         xsize 700
-        ysize 500
+        ysize 600
         background "#f1eff4"
         padding (30, 30)
 
         vbox:
-            spacing 15
+            spacing 12
             text "{b}Lab Notebook{/b}" size 40 color "#012a4a"
-            text "Sample Weights:" size 30 color "#474646"
+            text "Sample Weights:" size 28 color "#474646"
             for drug, weights in drug_weights.items():
-                $ net = weights["net"]
-                $ gross = weights["gross"]
                 $ _label = _SAMPLE_DISPLAY_NAME[drug]
-                text (f"Presumed Drug {_label}: " + (f"{net} g" if net is not None else "not yet weighed")) size 24 color "#474646"
-                text (f"Presumed Drug {_label} Bag: " + (f"{gross} g" if gross is not None else "not yet weighed")) size 24 color "#474646"
+                $ gross = weights["gross"]
+                $ net   = weights["net"]
+                $ rep   = weights["rep"]
+                text ("%s Gross (exhibit + packaging): " % _label + (f"{gross} g" if gross is not None else "not yet weighed")) size 20 color "#474646"
+                text ("%s Net (drug material only): " % _label + (f"{net} g" if net is not None else "not yet weighed")) size 20 color "#474646"
+                text ("%s Representative Sample: " % _label + (f"{rep} g" if rep is not None else "not yet weighed")) size 20 color "#474646"
 
         textbutton "✕":
             xalign 0.95 yalign 0.05
@@ -499,7 +504,44 @@ screen analytical_balance_screen():
             action Function(clear_balance)
 
     else:
-        if not all(weighed_net.values()) or weighboat_state == "loaded":
+        draggroup:
+            if selected_tool in ("inventory-sample1", "inventory-sample2", "inventory-sample3"):
+                drag:
+                    drag_name selected_tool
+                    draggable True
+                    droppable False
+                    dragging item_dragging_package
+                    dragged  analytical_balance_drop
+                    xpos 0.75 ypos 0.55
+                    child Transform(selected_tool, zoom=1.2)
+            drag:
+                drag_name "analytical_balance_dropzone"
+                draggable False
+                droppable True
+                xalign 0.5 yalign 0.35
+                child Transform(Solid("#00000000"), size=(300, 300))
+
+        for _drug in ["sample1", "sample2", "sample3"]:
+            if weighed_gross[_drug] and not weighed_net[_drug]:
+                $ _tx = {"sample1": 0.15, "sample2": 0.25, "sample3": 0.35}[_drug]
+                draggroup:
+                    drag:
+                        drag_name (_drug + "_idle")
+                        draggable True
+                        droppable False
+                        dragging item_dragging_package
+                        dragged  sample_material_drop
+                        xpos _tx ypos 0.75
+                        child Transform((_drug + "_idle"), zoom=1.2)
+                    drag:
+                        drag_name "analytical_balance_dropzone"
+                        draggable False
+                        droppable True
+                        xalign 0.5 yalign 0.35
+                        child Transform(Solid("#00000000"), size=(300, 300))
+
+        $ _rep_pending = any(weighed_net[d] and not weighed_rep[d] for d in ("sample1", "sample2", "sample3"))
+        if _rep_pending or weighboat_state == "loaded":
             draggroup:
                 if selected_tool == "spatula_idle":
                     drag:
@@ -521,7 +563,7 @@ screen analytical_balance_screen():
                         child Transform(selected_tool, zoom=1.2)
 
                 for _drug in ["sample1", "sample2", "sample3"]:
-                    if not weighed_net[_drug]:
+                    if weighed_net[_drug] and not weighed_rep[_drug]:
                         $ _tx = {"sample1": 0.15, "sample2": 0.25, "sample3": 0.35}[_drug]
                         drag:
                             drag_name (_drug + "_idle")
@@ -554,23 +596,6 @@ screen analytical_balance_screen():
                     droppable True
                     xalign 0.5 yalign 0.35
                     child Transform(Solid("#00000000"), size=(300, 300))
-
-        draggroup:
-            if selected_tool in ("inventory-sample1", "inventory-sample2", "inventory-sample3"):
-                drag:
-                    drag_name selected_tool
-                    draggable True
-                    droppable False
-                    dragging item_dragging_package
-                    dragged  analytical_balance_drop
-                    xpos 0.75 ypos 0.55
-                    child Transform(selected_tool, zoom=1.2)
-            drag:
-                drag_name "analytical_balance_dropzone"
-                draggable False
-                droppable True
-                xalign 0.5 yalign 0.35
-                child Transform(Solid("#00000000"), size=(300, 300))
 
 screen gcms_checklist():
     add "images/materials_lab/gcms/gcms_checklist/gcms_checklist_%d.png" % gcms_step:
