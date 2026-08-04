@@ -186,20 +186,8 @@ screen afis:
 screen analyzing:
     text "Analyzing..." xpos 0.425 ypos 0.785 size 50
 
-label computer:
+label afis:
     scene afis_plain_with_bar
-    # if fingerprint.processed and oven.state != "finished":
-    #     s "We've analyzed all available prints. We have no more business here."
-    #     jump hallway
-    # if oven.state == "off":
-    #     s "Let's preheat the oven first - that way it can start heating up while we're analyzing prints."
-    #     jump hallway
-    # elif oven.state == "preheated" or oven.state == "baked": 
-    #     s "Hold on. It looks like your oven has already [oven.state]. Let's check up on that first before we get started with analyzing prints."
-    #     jump hallway
-    # else:
-    #     $ location = "afis"
-    #     call screen afis
     $ location = "afis"
     call screen afis
 
@@ -291,6 +279,7 @@ label show_results:
             n normal1 "We'll be sure to question her some more there."
         $ print_imported = False
         $ imported_print = ""
+        $ check_lab_complete()
         jump hallway
     else:
         $ renpy.show(name="print_r", at_list=[Transform(xpos=0.375, ypos=0.25, zoom=0.83)], what=closeups_r[m])

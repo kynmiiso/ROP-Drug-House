@@ -100,7 +100,7 @@ init python:
             evidence_found.get("firearm_packaged", False),
             evidence_found.get("cash_packaged", False),
         ])
-        afis_done = firearm_fingerprint.processed
+        afis_done = prints["firearm_fingerprint"].processed
         gcms_done = all([
             gcms_queue_done.get("sample1", False),
             gcms_queue_done.get("sample2", False),
@@ -123,19 +123,7 @@ init python:
 
     def disable_timer(item: str):
         item = True
-
-    def calculate_afis(evidence):
-        global afis_search
-        afis_search = []
-        evidence.processed = True
-
-        for e in afis_evidence:
-            if e.processed and e != evidence:
-                afis_search.append(e)
-
-        if analyzed_everything():
-            renpy.jump("lab_end")
-            
+    
     def close_menu():
         if renpy.get_screen("casefile_physical"):
             renpy.hide_screen("casefile_physical")
@@ -145,24 +133,6 @@ init python:
             renpy.hide_screen("casefile")
         else:
             renpy.show_screen("casefile")
-
-    class Evidence:
-        def __init__(self, name, afis_details):
-            self.name = name
-            self.afis_details = afis_details
-            self.processed = False
-
-    firearm_fingerprint = Evidence(name = 'firearm_fingerprint',
-                                afis_details = {
-                                    'image': 'firearm_fingerprint',
-                                    'xpos':0.18, 'ypos':0.3,
-                                    'score': '70'})
-
-    # declare afis relevant evidence
-    afis_evidence = [firearm_fingerprint]
-
-    # set current_evidence to track which evidence is currently active
-    current_evidence = firearm_fingerprint
 
 # markers for evidence 
 default evidence_found = {
@@ -282,10 +252,6 @@ default current_cursor = ''
 default show_case_files = False
 default show_toolbox = False
 default location = "hallway"
-
-# entries on afis when searching
-default afis_search = []
-default afis_search_coordinates = [{'score_xpos': 0.53, 'xpos':0.61, 'ypos':0.505}]
 
 init python:
     def _total_drag_steps(item):
@@ -702,12 +668,6 @@ label data_analysis_lab:
             renpy.jump("lab_end")
     show screen back_button_screen('hallway') onlayer over_screens
     call screen data_analysis_lab_screen
-
-label afis:
-    hide screen back_button_screen onlayer over_screens
-    hide screen full_inventory
-    show screen back_button_screen('data_analysis_lab') onlayer over_screens
-    call screen afis_screen
 
 label materials_lab:
     $ location = ""

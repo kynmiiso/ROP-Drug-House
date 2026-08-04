@@ -22,17 +22,9 @@ default ab_pending_messages     = []
 default ab_wait_msg             = None
 
 init python:
-    _CORRECT_NET_WEIGHTS   = {"sample1": 2.6703, "sample2": 1.8415, "sample3": 3.1296}
     _CORRECT_GROSS_WEIGHTS = {"sample1": 106.8340, "sample2": 1268.4721, "sample3": 289.5857}
-    _SAMPLE_DISPLAY_NAME   = {"sample1": "Sample 1", "sample2": "Sample 2", "sample3": "Sample 3"}
-
-init python:
-    # PLACEHOLDER — replace with your real numbers. Net must be slightly
-    # less than gross (packaging weight subtracted); rep is the small
-    # portion taken from net for instrumental analysis.
-    _CORRECT_GROSS_WEIGHTS = {"sample1": 106.8340, "sample2": 1268.4721, "sample3": 289.5857}
-    _CORRECT_NET_WEIGHTS   = {"sample1": 98.2210,  "sample2": 1250.1050, "sample3": 275.9980}
-    _CORRECT_REP_WEIGHTS   = {"sample1": 2.6703,   "sample2": 1.8415,   "sample3": 3.1296}
+    _CORRECT_NET_WEIGHTS   = {"sample1": 100.1200,  "sample2": 1255.1050, "sample3": 280.9800}
+    _CORRECT_REP_WEIGHTS   = {"sample1": 3.0000,   "sample2": 3.0000,   "sample3": 3.0000}
     _SAMPLE_DISPLAY_NAME   = {"sample1": "Sample 1", "sample2": "Sample 2", "sample3": "Sample 3"}
 
     def weigh_sample(drug, weight_type):
@@ -127,15 +119,22 @@ init python:
 
         if not store.weighed_net[drug]:
             store.ab_pending_messages.append("Record the net weight of the drug material before taking a sample.")
-        elif dragged_image == "spatula_idle" and not store.weighed_rep[drug]:
-            store.selected_tool = "spatula_powder"
-            store.spatula_sample = drug
+            store.selected_tool = None
+
         elif store.weighed_rep[drug]:
             store.ab_pending_messages.append("A representative sample has already been taken from this exhibit.")
+            store.selected_tool = None
+
+        elif dragged_image == "spatula_idle":
+            store.selected_tool = "spatula_powder"
+            store.spatula_sample = drug
+            renpy.restart_interaction()
+            return True
+
         else:
             store.ab_pending_messages.append("Use the spatula to collect a representative sample.")
+            store.selected_tool = None
 
-        store.selected_tool = None
         renpy.restart_interaction()
         return True
 
