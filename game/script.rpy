@@ -577,7 +577,7 @@ label start:
 label house_intro:
     scene house exterior
     show nina normal1
-    n "Last night, police officers obtained and executed a search warrant for a room within this residence suspected of being used for drug trafficking activity."
+    n "Last night, police officers obtained and executed a search warrant for this residence suspected of being used for drug trafficking activity."
     show nina talk
     n "Are you the forensic identification officer who has been put in charge of this case? Great!"
     show nina normal1
