@@ -154,7 +154,6 @@ label gcms_run:
 label gcms_compare_interface:
     hide screen gcms_screen
     $ gcms_selected_peak = None
-    hide screen gcms_checklist
     call screen gcms_compare_screen
 
 label gcms_identify:

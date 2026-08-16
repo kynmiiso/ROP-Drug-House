@@ -30,6 +30,8 @@ init python:
     def spe_hand_off(drug):
         store.spe_skipped_sample = drug
         store.spe_handoff_offered = True
+        evidence.delete_from_inventory(evids[_SPE_EVIDENCE_ITEM[drug]])
+        renpy.notify("You hand the sample to the lab assistant.")
 
     def spe_check_completion():
         if store.spe_skipped_sample:
@@ -38,7 +40,6 @@ init python:
                 skipped = store.spe_skipped_sample
                 if not globals()["has_SPE_" + skipped]:
                     globals()["has_SPE_" + skipped] = True
-                    evidence.delete_from_inventory(evids[_SPE_EVIDENCE_ITEM[skipped]])
                     evidence.add_to_inventory(evids[_SPE_PREPARED_ITEM[skipped]])
                     renpy.notify("The lab assistant finished preparing the handed-off sample.")
                 store.spe_skipped_sample = None
