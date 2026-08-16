@@ -38,9 +38,6 @@ init python:
                 "Recorded gross weight (exhibit and packaging) for %s: %.4f g"
                 % (_label, _CORRECT_GROSS_WEIGHTS[drug])
             )
-            store.ab_pending_messages.append(
-                "The packaging for %s has been removed. The drug material is ready to be weighed." % _label
-            )
 
         elif weight_type == "net":
             store.drug_weights[drug]["net"] = _CORRECT_NET_WEIGHTS[drug]
@@ -48,6 +45,9 @@ init python:
             store.ab_pending_messages.append(
                 "Recorded net weight (drug material only) for %s: %.4f g"
                 % (_label, _CORRECT_NET_WEIGHTS[drug])
+            )
+            store.ab_pending_messages.append(
+                "Remember to take a small representative sample with the spatula for the next weighing."
             )
 
         else:  # "rep"
@@ -68,38 +68,12 @@ init python:
                 "All exhibits have had gross, net, and representative sample weights recorded. Solid Phase Extraction is now available."
             )
 
-    def sample_material_drop(drags, drop):
-        """Unpackaged drug material dragged directly onto the balance -> records NET weight.
-        Only valid once gross is done and before net is done."""
-        if not drop or drop.drag_name != "analytical_balance_dropzone":
-            store.selected_tool = None
-            renpy.restart_interaction()
-            return False
-
-        dragged_image = drags[0].drag_name
-        if not dragged_image.endswith("_idle") or dragged_image == "weighboat_idle":
-            store.selected_tool = None
-            renpy.restart_interaction()
-            return False
-
-        drug = dragged_image.replace("_idle", "")
-        if drug not in ("sample1", "sample2", "sample3"):
-            store.selected_tool = None
-            renpy.restart_interaction()
-            return False
-
-        if store.balance_state != "zero":
-            store.ab_pending_messages.append("Remove the current item from the balance before weighing another.")
-        elif not store.weighed_gross[drug]:
-            store.ab_pending_messages.append("Record the gross weight before weighing the drug material.")
-        elif store.weighed_net[drug]:
-            store.ab_pending_messages.append("This exhibit's net weight has already been recorded.")
-        else:
-            weigh_sample(drug, "net")
-
-        store.selected_tool = None
-        renpy.restart_interaction()
-        return True
+    def remove_packaging_and_weigh(drug):
+        """Narrates removing packaging, then immediately records the net weight
+        and shows the net-weight result. Replaces the old drag-based net step."""
+        _label = _SAMPLE_DISPLAY_NAME[drug]
+        say("You remove the packaging and weigh the sample.", n)
+        weigh_sample(drug, "net")
 
     def sample_bag_drop(drags, drop):
         """Spatula collects a small representative sample from the drug material,
@@ -199,7 +173,6 @@ init python:
         store.balance_result_type = None
         store.balance_result_drug = None
         renpy.restart_interaction()
-
 label analytical_balance:
     $ hide_all_lab_screens()
     $ hide_all_inventory()

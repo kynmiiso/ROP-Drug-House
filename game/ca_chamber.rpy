@@ -138,7 +138,7 @@ label ca_chamber_finish:
     show firearm_fingerprint at Transform(xalign=0.5, yalign=0.1)
     "You took a photo of the fingerprints on the fumed firearm."
     $ ca_chamber_step = 8
-    n normal1 "CA Fuming checklist complete!" 
+    n normal1 "CA Fuming complete!" 
     hide firearm_fingerprint
     hide screen ca_chamber_checklist
     hide screen ca_chamber_amount_check

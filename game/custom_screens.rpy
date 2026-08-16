@@ -493,15 +493,26 @@ screen analytical_balance_screen():
         $ _result_img = "analytical_balance_%s_%s" % (balance_result_type, balance_result_drug)
         add _result_img at Transform(xalign=0.5, yalign=0.5)
 
-        textbutton "Remove Sample":
-            xalign 0.5 ypos 0.85
-            xsize 400 ysize 90
-            text_size 42
-            text_color "#ffffff"
-            text_align 0.5
-            background "#012a4a"
-            hover_background "#0466c8"
-            action Function(clear_balance)
+        if balance_result_type == "gross":
+            textbutton "Remove Packaging & Weigh Sample":
+                xalign 0.5 ypos 0.85
+                xsize 480 ysize 90
+                text_size 38
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                action Function(remove_packaging_and_weigh, balance_result_drug)
+        else:
+            textbutton "Remove Sample":
+                xalign 0.5 ypos 0.85
+                xsize 400 ysize 90
+                text_size 42
+                text_color "#ffffff"
+                text_align 0.5
+                background "#012a4a"
+                hover_background "#0466c8"
+                action Function(clear_balance)
 
     else:
         draggroup:
@@ -520,25 +531,6 @@ screen analytical_balance_screen():
                 droppable True
                 xalign 0.5 yalign 0.35
                 child Transform(Solid("#00000000"), size=(300, 300))
-
-        for _drug in ["sample1", "sample2", "sample3"]:
-            if weighed_gross[_drug] and not weighed_net[_drug]:
-                $ _tx = {"sample1": 0.15, "sample2": 0.25, "sample3": 0.35}[_drug]
-                draggroup:
-                    drag:
-                        drag_name (_drug + "_idle")
-                        draggable True
-                        droppable False
-                        dragging item_dragging_package
-                        dragged  sample_material_drop
-                        xpos _tx ypos 0.75
-                        child Transform((_drug + "_idle"), zoom=1.2)
-                    drag:
-                        drag_name "analytical_balance_dropzone"
-                        draggable False
-                        droppable True
-                        xalign 0.5 yalign 0.35
-                        child Transform(Solid("#00000000"), size=(300, 300))
 
         $ _rep_pending = any(weighed_net[d] and not weighed_rep[d] for d in ("sample1", "sample2", "sample3"))
         if _rep_pending or weighboat_state == "loaded":

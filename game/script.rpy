@@ -601,7 +601,7 @@ label skip_to_lab:
 label scene_room:
     $ load_scene_toolbox()
     scene house interior
-    "You take photos of the scene and suspicious looking powder scattered about."
+    "You photograph the scene and the suspicious evidence scattered about before doing any evidence collection."
     show nina normal1
     n "Here we are. Take a good look around before we start."
     n "Some suspected drugs are scattered around the room."
@@ -665,7 +665,7 @@ label data_analysis_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
-            renpy.jump("lab_end")
+            renpy.jump("hallway")
     show screen back_button_screen('hallway') onlayer over_screens
     call screen data_analysis_lab_screen
 
@@ -676,7 +676,7 @@ label materials_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
-            renpy.jump("lab_end")
+            renpy.jump("hallway")
     hide screen back_button_screen onlayer over_screens
     show screen back_button_screen('hallway') onlayer over_screens
     call screen materials_lab_screen
