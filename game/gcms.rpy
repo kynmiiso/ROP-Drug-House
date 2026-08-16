@@ -171,12 +171,14 @@ label gcms_identify:
             "Yes, it is consistent":
                 if presumptive_result:
                     n "Correct! The presumptive test was consistent with this result."
+                    $ gcms_step += 1
                 else:
                     n "Incorrect. The presumptive test result does not match this GC-MS identification."
                     jump gcms_identify
             "No, it isn't consistent":
                 if not presumptive_result:
                     n "Correct! The presumptive test was inconsistent with this result."
+                    $ gcms_step += 1
                 else:
                     n "Incorrect. The presumptive test result matches this GC-MS identification."
                     jump gcms_identify

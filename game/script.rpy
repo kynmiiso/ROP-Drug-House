@@ -665,6 +665,8 @@ label data_analysis_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
+            renpy.scene()
+            renpy.show("lab_hallway_idle")
             renpy.jump("hallway")
     show screen back_button_screen('hallway') onlayer over_screens
     call screen data_analysis_lab_screen
@@ -676,11 +678,13 @@ label materials_lab:
     python:
         if analyzed_everything():
             renpy.hide_screen("full_inventory")
+            renpy.scene()
+            renpy.show("lab_hallway_idle")
             renpy.jump("hallway")
     hide screen back_button_screen onlayer over_screens
     show screen back_button_screen('hallway') onlayer over_screens
     call screen materials_lab_screen
-
+    
 label lab_end:
     hide screen back_button_screen onlayer over_screens
     show nina normal1
