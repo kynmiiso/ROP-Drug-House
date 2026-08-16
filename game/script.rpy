@@ -616,9 +616,6 @@ label scene_room:
     jump scene_room_loop
 
 label investigation_complete:
-    # NOTE: this label should only be reached once all_evidence_collected() is True
-    # (sample1, sample2, sample3, firearm, and cash all packaged). Gate whatever
-    # button/screen jumps here on that helper rather than jumping unconditionally.
     scene house interior
     hide screen investigation_buttons
     hide screen inventory
@@ -684,7 +681,7 @@ label materials_lab:
     hide screen back_button_screen onlayer over_screens
     show screen back_button_screen('hallway') onlayer over_screens
     call screen materials_lab_screen
-    
+
 label lab_end:
     hide screen back_button_screen onlayer over_screens
     show nina normal1
