@@ -507,6 +507,8 @@ label evidence_quiz:
             $ quiz_pending = False
             hide screen reagent_result
             "[_q['correct_msg']]"
+            if _reagent == "scott":
+                $ evidence_found[testing_item + "_presumptive"] = True
 
         "[list(_q['wrong'].keys())[0]]":
             hide screen reagent_result
